@@ -52,7 +52,7 @@ function ResponsiveAppBar() {
         bgcolor: "#1f2937",
       }}
     >
-      <Container maxWidth="xl">
+      <Container maxWidth={false}>
         <Toolbar disableGutters>
           <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
           <Typography
@@ -65,7 +65,6 @@ function ResponsiveAppBar() {
               display: { xs: "none", md: "flex" },
               fontFamily: "arial",
               fontWeight: 700,
-              letterSpacing: ".3rem",
               color: "inherit",
               textDecoration: "none",
             }}

@@ -21,10 +21,7 @@ import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import { useState } from "react";
-
-interface DisplayNotesSidebarProps {
-  fileUrl: string;
-}
+import { useRouter } from "next/router";
 
 interface Note {
   id: number;
@@ -33,9 +30,22 @@ interface Note {
   quote: string;
 }
 
-const DisplayNotesSidebar: React.FC<DisplayNotesSidebarProps> = ({
-  fileUrl,
-}) => {
+const documentsToReview = [
+  {
+    id: 1,
+    title: "Placement Tech",
+    url: "/Placement_Tech.pdf",
+    done: true,
+  },
+  {
+    id: 2,
+    title: "Placement Tech",
+    url: "/Placement_Tech.pdf",
+    done: false,
+  },
+];
+
+const DisplayNotesSidebar = () => {
   const [message, setMessage] = useState("");
   const [notes, setNotes] = useState<Note[]>([]);
   let noteId = notes.length;
@@ -157,7 +167,10 @@ const DisplayNotesSidebar: React.FC<DisplayNotesSidebarProps> = ({
     renderHighlightContent,
     renderHighlights,
   });
-
+  const router = useRouter();
+  const { id } = router.query;
+  const fileUrl = documentsToReview.find((doc) => doc.id === Number(id))
+    ?.url as string;
   const { jumpToHighlightArea } = highlightPluginInstance;
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   return (

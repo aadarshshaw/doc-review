@@ -7,14 +7,20 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { v4 } from "uuid";
 import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import dbConnect from "@/utils/dbConnect";
+import document from "@/models/document";
+import Link from "next/link";
 
-interface Document {
-  id: number;
-  name: string;
-  tags?: string[];
+interface DocumentInterface {
+  _id: string;
+  title: string;
+  url: string;
+  user: string;
+  reviewers: string[];
 }
 
 const style = {
@@ -29,29 +35,42 @@ const style = {
   borderRadius: 2,
 };
 
-export default function Home() {
-  const [documents, setDocuments] = useState<Document[]>([]);
+export default function Home({
+  alldocuments,
+}: {
+  alldocuments: DocumentInterface[];
+}) {
+  const [documents, setDocuments] = useState<DocumentInterface[]>(alldocuments);
   const [open, setOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
-  const [modalDescription, setModalDescription] = useState("");
-  const [modalFile, setModalFile] = useState("");
+  const [modalFile, setModalFile] = useState<File | null>(null);
 
   const handleOpen = () => {
     setOpen(true);
   };
   const handleClose = () => setOpen(false);
-  function addDocumentCard() {
-    const newDocument: Document = {
-      id: Math.random(),
-      name: modalTitle,
-    };
-    setDocuments([...documents, newDocument]);
-    handleClose();
-    console.log(modalFile);
-    setModalTitle("");
-    setModalDescription("");
-    setModalFile("");
-  }
+
+  const handleSubmit = async () => {
+    const formData = new FormData();
+    formData.append("file", modalFile as File);
+    formData.append("upload_preset", "pbr-files");
+    const response = await axios.post(
+      `https://api.cloudinary.com/v1_1/dqf3db9zz/image/upload`,
+      formData
+    );
+    axios
+      .post("/api/document", {
+        title: modalTitle,
+        url: response.data.url,
+        user: "aadarsh",
+        reviewers: ["aadarsh", "aadarsh2"],
+      })
+      .then((res) => res.data)
+      .then((data) => {
+        setDocuments((prev) => [...prev, data.document]);
+      });
+    setOpen(false);
+  };
 
   return (
     <>
@@ -83,7 +102,7 @@ export default function Home() {
         >
           <Box sx={style}>
             <Stack spacing={2}>
-              <Typography variant="h5">Create Document</Typography>
+              <Typography variant="h5">New Document</Typography>
               <TextField
                 id="outlined-basic"
                 label="Title"
@@ -91,28 +110,23 @@ export default function Home() {
                 value={modalTitle}
                 onChange={(e) => setModalTitle(e.target.value)}
               />
-              <TextField
-                id="outlined-basic"
-                label="Description"
-                variant="outlined"
-                multiline
-                rows={4}
-                value={modalDescription}
-                onChange={(e) => setModalDescription(e.target.value)}
-              />
               <Button variant="contained" component="label">
                 Upload File
                 <input
                   type="file"
-                  hidden
                   accept="pdf"
-                  value={modalFile}
-                  onChange={(e) => setModalFile(e.target.value)}
+                  onChange={(e) =>
+                    setModalFile(() => {
+                      if (e.target.files) {
+                        return e.target.files[0];
+                      }
+                      return null;
+                    })
+                  }
                 />
               </Button>
-              <Button variant="contained" onClick={addDocumentCard}>
-                {" "}
-                Create{" "}
+              <Button variant="contained" onClick={handleSubmit}>
+                Create
               </Button>
             </Stack>
           </Box>
@@ -120,7 +134,7 @@ export default function Home() {
 
         {documents.map((document) => {
           return (
-            <div key={document.id}>
+            <div key={document._id}>
               <Paper
                 elevation={3}
                 sx={{
@@ -137,26 +151,21 @@ export default function Home() {
                     my: "auto",
                   }}
                 >
-                  {document.name}
+                  <Link href={document.url} target="_blank">
+                    {document.title}
+                  </Link>
                 </Typography>
-                <Button
-                  variant="contained"
-                  color="info"
-                  sx={{
-                    marginLeft: "auto",
-                    borderRadius: 0,
-                  }}
-                >
-                  <EditIcon />
-                </Button>
                 <Button
                   variant="contained"
                   color="error"
                   sx={{
                     borderRadius: 0,
+                    marginLeft: "auto",
                   }}
-                  onClick={() =>{
-                    const newDocuments = documents.filter((doc) => doc.id !== document.id);
+                  onClick={() => {
+                    const newDocuments = documents.filter(
+                      (doc) => doc._id !== document._id
+                    );
                     setDocuments(newDocuments);
                   }}
                 >
@@ -169,4 +178,24 @@ export default function Home() {
       </Box>
     </>
   );
+}
+
+export async function getServerSideProps() {
+  await dbConnect();
+  const result = await document.find({ user: "aadarsh" });
+  const documents = result.map((doc) => {
+    const document = {
+      _id: doc._id.toString(),
+      title: doc.title,
+      url: doc.url,
+      user: doc.user,
+      reviewers: doc.reviewers,
+    };
+    return document;
+  });
+  return {
+    props: {
+      alldocuments: documents,
+    },
+  };
 }

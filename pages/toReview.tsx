@@ -1,39 +1,40 @@
 import { Paper, Typography, Button, Box } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PreviewIcon from "@mui/icons-material/Preview";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-
-const documentsToReview = [
-  {
-    id: 1,
-    title: "Placement Tech",
-    url: "/Placement_Tech.pdf",
-    done: true,
-  },
-  {
-    id: 2,
-    title: "Placement Tech",
-    url: "/Placement_Tech.pdf",
-    done: false,
-  },
-];
+import { DocumentInterface } from "@/interface/document";
+import { useSession } from "next-auth/react";
+import { UserInterface } from "@/interface/user";
+import axios from "axios";
 
 export default function Review() {
-  // return <DisplayNotesSidebar fileUrl="/Placement_Tech.pdf" />;
-  const [documents, setDocuments] = useState(documentsToReview);
+  const [documents, setDocuments] = useState<DocumentInterface[]>([]);
   const router = useRouter();
+  const { status, data } = useSession();
+  const user = data?.user as UserInterface;
+
+  useEffect(() => {
+    if (!user) return;
+    axios
+      .get("/api/document", { params: { reviewer: user.email } })
+      .then((res) => {
+        setDocuments(res.data.documents);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [status]);
+
   return (
     <Box
       sx={{
         margin: 2,
       }}
     >
-      <Typography variant="h4">Pending</Typography>
       {documents.map((document) => {
-        if (document.done) return null;
         return (
-          <div key={document.id}>
+          <div key={document._id}>
             <Paper
               elevation={3}
               sx={{
@@ -60,7 +61,10 @@ export default function Review() {
                   borderRadius: 0,
                 }}
                 onClick={() => {
-                  router.push(`/review/${document.id}`);
+                  router.push({
+                    pathname: "/review",
+                    query: { id: document._id },
+                  });
                 }}
               >
                 <PreviewIcon />
@@ -73,62 +77,7 @@ export default function Review() {
                 }}
                 onClick={() => {
                   const newDocuments = documents.filter(
-                    (doc) => doc.id !== document.id
-                  );
-                  setDocuments(newDocuments);
-                }}
-              >
-                <DeleteIcon />
-              </Button>
-            </Paper>
-          </div>
-        );
-      })}
-      <Typography variant="h4">Done</Typography>
-      {documents.map((document) => {
-        if (!!!document.done) return null;
-        return (
-          <div key={document.id}>
-            <Paper
-              elevation={3}
-              sx={{
-                my: 2,
-                height: 50,
-                display: "flex",
-                flexDirection: "row",
-              }}
-            >
-              <Typography
-                variant="h5"
-                sx={{
-                  mx: 2,
-                  my: "auto",
-                }}
-              >
-                {document.title}
-              </Typography>
-              <Button
-                variant="contained"
-                color="info"
-                sx={{
-                  marginLeft: "auto",
-                  borderRadius: 0,
-                }}
-                onClick={() => {
-                  router.push(`/review/${document.id}`);
-                }}
-              >
-                <PreviewIcon />
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                sx={{
-                  borderRadius: 0,
-                }}
-                onClick={() => {
-                  const newDocuments = documents.filter(
-                    (doc) => doc.id !== document.id
+                    (doc) => doc._id !== document._id
                   );
                   setDocuments(newDocuments);
                 }}

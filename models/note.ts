@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { HighlightAreaSchema } from "./highlightArea";
 
-const NoteSchema = new mongoose.Schema(
+export const NoteSchema = new mongoose.Schema(
   {
     content: {
       type: String,

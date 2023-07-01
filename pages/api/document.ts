@@ -12,26 +12,37 @@ export default async function handler(
     case "GET":
       if (req.query.id) {
         const { id } = req.query;
-        Document.findById(id, (err: any, doc: any) => {
-          if (err) {
-            res.status(500).json({ error: "Something went wrong" });
-          } else {
-            res.status(200).json({ document: doc });
-          }
-          
-        });
+        Document.findById(id)
+          .then((doc: any) => {
+            return res.status(200).json({ document: doc });
+          })
+          .catch((err: any) => {
+            return res.status(500).json({ error: "Something went wrong" });
+          });
       }
       if (req.query.user) {
         const { user } = req.query;
         Document.find({ user })
           .then((docs: any) => {
-            res.status(200).json({ documents: docs });
+            return res.status(200).json({ documents: docs });
           })
           .catch((err: any) => {
-            res.status(500).json({ error: "Something went wrong" });
+            return res.status(500).json({ error: "Something went wrong" });
+          });
+      }
+
+      if (req.query.reviewer) {
+        const { reviewer } = req.query;
+        Document.find({ reviewers: { $in: reviewer } })
+          .then((docs: any) => {
+            return res.status(200).json({ documents: docs });
+          })
+          .catch((err: any) => {
+            return res.status(500).json({ error: "Something went wrong" });
           });
       }
       break;
+
     case "POST":
       const { title, url, user, reviewers } = req.body;
       const document = new Document({
@@ -43,25 +54,26 @@ export default async function handler(
       document
         .save()
         .then((doc: any) => {
-          res.status(200).json({ document: doc });
+          return res.status(200).json({ document: doc });
         })
         .catch((err: any) => {
-          res.status(500).json({ error: "Something went wrong" });
+          return res.status(500).json({ error: "Something went wrong" });
         });
 
       break;
+
     case "DELETE":
       const { id: deleteId } = req.query;
-      Document.findByIdAndDelete(deleteId, (err: any, doc: any) => {
-        if (err) {
-          res.status(500).json({ error: "Something went wrong" });
-        } else {
-          res.status(200).json({ document: doc });
-        }
-      });
+      Document.findByIdAndDelete(deleteId)
+        .then((doc: any) => {
+          return res.status(200).json({ document: doc });
+        })
+        .catch((err: any) => {
+          return res.status(500).json({ error: "Something went wrong" });
+        });
+
       break;
     default:
-      res.setHeader("Allow", ["GET", "POST", "DELETE"]);
-      res.status(405).end(`Method ${method} Not Allowed`);
+      return res.status(405).end(`Method ${method} Not Allowed`);
   }
 }

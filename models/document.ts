@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { NoteSchema } from "./note";
 
 const DocumentSchema = new mongoose.Schema({
     title: {
@@ -19,7 +20,9 @@ const DocumentSchema = new mongoose.Schema({
     reviewers: {
         type: [String],
     },
-    
+    notes:{
+        type: [NoteSchema],
+    }
 }, {
     timestamps: true
 });

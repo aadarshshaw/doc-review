@@ -9,19 +9,14 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { v4 } from "uuid";
 import DeleteIcon from "@mui/icons-material/Delete";
-import dbConnect from "@/utils/dbConnect";
-import document from "@/models/document";
 import Link from "next/link";
-
-interface DocumentInterface {
-  _id: string;
-  title: string;
-  url: string;
-  user: string;
-  reviewers: string[];
-}
+import { DocumentInterface } from "@/interface/document";
+import { UserInterface } from "@/interface/user";
+import { useSession } from "next-auth/react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "./api/auth/[...nextauth]";
+import { stat } from "fs";
 
 const style = {
   position: "absolute" as "absolute",
@@ -35,15 +30,32 @@ const style = {
   borderRadius: 2,
 };
 
-export default function Home({
-  alldocuments,
-}: {
-  alldocuments: DocumentInterface[];
-}) {
-  const [documents, setDocuments] = useState<DocumentInterface[]>(alldocuments);
+export default function Home() {
+  const [documents, setDocuments] = useState<DocumentInterface[]>([]);
   const [open, setOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalFile, setModalFile] = useState<File | null>(null);
+  const [reviewers, setReviewers] = useState<string[]>([]);
+  const { status, data } = useSession();
+  const user = data?.user as UserInterface;
+
+  useEffect(() => {
+    if (!user) return;
+    axios
+      .get("/api/document", { params: { user: user.email } })
+      .then((res) => {
+        setDocuments(res.data.documents);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [status]);
+
+  const clearModal = () => {
+    setModalTitle("");
+    setModalFile(null);
+    setReviewers([]);
+  };
 
   const handleOpen = () => {
     setOpen(true);
@@ -62,14 +74,39 @@ export default function Home({
       .post("/api/document", {
         title: modalTitle,
         url: response.data.url,
-        user: "aadarsh",
-        reviewers: ["aadarsh", "aadarsh2"],
+        user: user.email,
+        reviewers: reviewers,
       })
       .then((res) => res.data)
       .then((data) => {
         setDocuments((prev) => [...prev, data.document]);
+        clearModal();
       });
     setOpen(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    const document = documents.find(
+      (doc) => doc._id === id
+    ) as DocumentInterface;
+    const newDocuments = documents.filter((doc) => doc._id !== id);
+    axios
+      .delete("/api/cloudinary", { params: { url: document.url } })
+      .then(() => {
+        console.log("deleted from cloudinary");
+        axios
+          .delete("/api/document", { params: { id } })
+          .then(() => {
+            console.log("deleted from db");
+            setDocuments(newDocuments);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (
@@ -110,8 +147,21 @@ export default function Home({
                 value={modalTitle}
                 onChange={(e) => setModalTitle(e.target.value)}
               />
+              <Typography variant="h6">Reviewers</Typography>
+              <TextField
+                id="outlined-basic"
+                label="Reviewers"
+                variant="outlined"
+                value={reviewers}
+                placeholder="comma separated usernames"
+                onChange={(e) =>
+                  setReviewers(
+                    e.target.value.split(",").map((reviewer) => reviewer.trim())
+                  )
+                }
+              />
+              <Typography variant="h6">Upload File</Typography>
               <Button variant="contained" component="label">
-                Upload File
                 <input
                   type="file"
                   accept="pdf"
@@ -163,10 +213,7 @@ export default function Home({
                     marginLeft: "auto",
                   }}
                   onClick={() => {
-                    const newDocuments = documents.filter(
-                      (doc) => doc._id !== document._id
-                    );
-                    setDocuments(newDocuments);
+                    handleDelete(document._id);
                   }}
                 >
                   <DeleteIcon />
@@ -178,24 +225,4 @@ export default function Home({
       </Box>
     </>
   );
-}
-
-export async function getServerSideProps() {
-  await dbConnect();
-  const result = await document.find({ user: "aadarsh" });
-  const documents = result.map((doc) => {
-    const document = {
-      _id: doc._id.toString(),
-      title: doc.title,
-      url: doc.url,
-      user: doc.user,
-      reviewers: doc.reviewers,
-    };
-    return document;
-  });
-  return {
-    props: {
-      alldocuments: documents,
-    },
-  };
 }

@@ -2,7 +2,6 @@ import * as React from "react";
 import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
 import {
   highlightPlugin,
-  HighlightArea,
   MessageIcon,
   RenderHighlightContentProps,
   RenderHighlightsProps,
@@ -22,32 +21,15 @@ import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import { Box, Paper, Stack, Typography } from "@mui/material";
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { NoteInterface } from "@/interface/note";
+import axios from "axios";
+import { DocumentInterface } from "@/interface/document";
+import dbConnect from "@/utils/dbConnect";
+import document from "@/models/document";
 
-interface Note {
-  id: number;
-  content: string;
-  highlightAreas: HighlightArea[];
-  quote: string;
-}
-
-const documentsToReview = [
-  {
-    id: 1,
-    title: "Placement Tech",
-    url: "/Placement_Tech.pdf",
-    done: true,
-  },
-  {
-    id: 2,
-    title: "Placement Tech",
-    url: "/Placement_Tech.pdf",
-    done: false,
-  },
-];
-
-const DisplayNotesSidebar = () => {
+const DisplayNotesSidebar = ({ document }: { document: DocumentInterface }) => {
   const [message, setMessage] = useState("");
-  const [notes, setNotes] = useState<Note[]>([]);
+  const [notes, setNotes] = useState<NoteInterface[]>(document.notes);
   let noteId = notes.length;
 
   const noteEles: Map<number, HTMLElement> = new Map();
@@ -80,7 +62,7 @@ const DisplayNotesSidebar = () => {
   const renderHighlightContent = (props: RenderHighlightContentProps) => {
     const addNote = () => {
       if (message !== "") {
-        const note: Note = {
+        const note: NoteInterface = {
           id: ++noteId,
           content: message,
           highlightAreas: props.highlightAreas,
@@ -128,7 +110,7 @@ const DisplayNotesSidebar = () => {
     );
   };
 
-  const jumpToNote = (note: Note) => {
+  const jumpToNote = (note: NoteInterface) => {
     if (noteEles.has(note.id)) {
       noteEles.get(note.id)?.scrollIntoView();
     }
@@ -167,10 +149,7 @@ const DisplayNotesSidebar = () => {
     renderHighlightContent,
     renderHighlights,
   });
-  const router = useRouter();
-  const { id } = router.query;
-  const fileUrl = documentsToReview.find((doc) => doc.id === Number(id))
-    ?.url as string;
+  const fileUrl = document.url;
   const { jumpToHighlightArea } = highlightPluginInstance;
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   return (
@@ -268,3 +247,22 @@ const DisplayNotesSidebar = () => {
 };
 
 export default DisplayNotesSidebar;
+
+export async function getServerSideProps(context: { query: { id: any } }) {
+  await dbConnect();
+  const { id } = context.query;
+  const result = await document.findOne({ _id: id });
+  const doc = {
+    _id: result._id.toString(),
+    title: result.title,
+    url: result.url,
+    user: result.user,
+    reviewers: result.reviewers,
+    notes: result.notes,
+  };
+  return {
+    props: {
+      document: doc,
+    },
+  };
+}

@@ -13,6 +13,8 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
+import { UserInterface } from "@/interface/user";
 
 const pages = [
   { name: "Home", href: "/" },
@@ -44,7 +46,10 @@ function ResponsiveAppBar() {
   };
 
   const router = useRouter();
-
+  const { status, data } = useSession();
+  if (status === "loading") return null;
+  const user = data?.user as UserInterface;
+  
   return (
     <AppBar
       position="static"
@@ -106,7 +111,7 @@ function ResponsiveAppBar() {
                   key={page.name}
                   onClick={() => {
                     handleCloseNavMenu();
-                    router.push(`/${page.href}`);
+                    router.push(`${page.href}`);
                   }}
                 >
                   <Typography textAlign="center">{page.name}</Typography>
@@ -139,7 +144,7 @@ function ResponsiveAppBar() {
                 key={page.name}
                 onClick={() => {
                   handleCloseNavMenu();
-                  router.push(`/${page.href}`);
+                  router.push(`${page.href}`);
                 }}
                 sx={{
                   my: 2,
@@ -156,7 +161,7 @@ function ResponsiveAppBar() {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                <Avatar alt={user.name || ""} src={user.image} />
               </IconButton>
             </Tooltip>
             <Menu

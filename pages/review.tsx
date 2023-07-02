@@ -19,27 +19,47 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import { Box, Paper, Stack, Typography, Button } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NoteInterface } from "@/interface/note";
 import axios from "axios";
 import { DocumentInterface } from "@/interface/document";
-import dbConnect from "@/utils/dbConnect";
-import document from "@/models/document";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
-const DisplayNotesSidebar = ({
-  _document,
-}: {
-  _document: DocumentInterface;
-}) => {
+const defaultDocument: DocumentInterface = {
+  _id: "",
+  title: "",
+  url: "/Placement_Tech.pdf",
+  user: "",
+  reviewers: [],
+  notes: [],
+};
+
+const DisplayNotesSidebar = () => {
   const [message, setMessage] = useState("");
-  const [notes, setNotes] = useState<NoteInterface[]>(_document.notes);
+  const [notes, setNotes] = useState<NoteInterface[]>([]);
+  const [document, setDocument] = useState<DocumentInterface>(defaultDocument);
   const { status, data } = useSession();
-  // if (status === "loading") {
-  //   return <div>Loading...</div>;
-  // }
+  const router = useRouter();
+  const document_id = router.query.id as string;
+
   const user = data?.user;
   let noteId = notes.length;
+
+  useEffect(() => {
+    if (!user) return;
+    axios
+      .get("/api/document", { params: { id: document_id } })
+      .then((res) => {
+        console.log(res.data.document);
+        setDocument(res.data.document);
+        setNotes(res.data.document.notes);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+  , [status, user]);
 
   const noteEles: Map<number, HTMLElement> = new Map();
 
@@ -72,7 +92,7 @@ const DisplayNotesSidebar = ({
     const addNote = async () => {
       if (message !== "") {
         const response = await axios.put("/api/document/note", {
-          doc_id: _document._id,
+          doc_id: document._id,
           content: message,
           highlightAreas: props.highlightAreas,
           quote: props.selectedText,
@@ -169,7 +189,7 @@ const DisplayNotesSidebar = ({
     renderHighlightContent,
     renderHighlights,
   });
-  const fileUrl = _document.url;
+  const fileUrl = document.url;
   const { jumpToHighlightArea } = highlightPluginInstance;
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   return (
@@ -275,15 +295,3 @@ const DisplayNotesSidebar = ({
 };
 
 export default DisplayNotesSidebar;
-
-export async function getServerSideProps(context: { query: { id: any } }) {
-  await dbConnect();
-  const { id } = context.query;
-  const result = await document.findOne({ _id: id }).lean();
-
-  return {
-    props: {
-      _document: JSON.parse(JSON.stringify(result)),
-    },
-  };
-}

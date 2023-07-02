@@ -8,28 +8,37 @@ import {
   RenderHighlightTargetProps,
 } from "@react-pdf-viewer/highlight";
 import {
-  Button,
   Position,
   PrimaryButton,
   Tooltip,
   Viewer,
   Worker,
 } from "@react-pdf-viewer/core";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import { Box, Paper, Stack, Typography, Button } from "@mui/material";
 import { useState } from "react";
-import { useRouter } from "next/router";
 import { NoteInterface } from "@/interface/note";
 import axios from "axios";
 import { DocumentInterface } from "@/interface/document";
 import dbConnect from "@/utils/dbConnect";
 import document from "@/models/document";
+import { useSession } from "next-auth/react";
 
-const DisplayNotesSidebar = ({ document }: { document: DocumentInterface }) => {
+const DisplayNotesSidebar = ({
+  _document,
+}: {
+  _document: DocumentInterface;
+}) => {
   const [message, setMessage] = useState("");
-  const [notes, setNotes] = useState<NoteInterface[]>(document.notes);
+  const [notes, setNotes] = useState<NoteInterface[]>(_document.notes);
+  const { status, data } = useSession();
+  // if (status === "loading") {
+  //   return <div>Loading...</div>;
+  // }
+  const user = data?.user;
   let noteId = notes.length;
 
   const noteEles: Map<number, HTMLElement> = new Map();
@@ -60,16 +69,26 @@ const DisplayNotesSidebar = ({ document }: { document: DocumentInterface }) => {
   );
 
   const renderHighlightContent = (props: RenderHighlightContentProps) => {
-    const addNote = () => {
+    const addNote = async () => {
       if (message !== "") {
-        const note: NoteInterface = {
-          id: ++noteId,
+        const response = await axios.put("/api/document/note", {
+          doc_id: _document._id,
           content: message,
           highlightAreas: props.highlightAreas,
           quote: props.selectedText,
+          addedBy: user?.email,
+        });
+
+        const note: NoteInterface = {
+          _id: response.data._id,
+          content: message,
+          highlightAreas: props.highlightAreas,
+          quote: props.selectedText,
+          addedBy: user?.email as string,
         };
         setNotes(notes.concat([note]));
         props.cancel();
+        setMessage("");
       }
     };
 
@@ -111,15 +130,15 @@ const DisplayNotesSidebar = ({ document }: { document: DocumentInterface }) => {
   };
 
   const jumpToNote = (note: NoteInterface) => {
-    if (noteEles.has(note.id)) {
-      noteEles.get(note.id)?.scrollIntoView();
+    if (noteEles.has(note._id)) {
+      noteEles.get(note._id)?.scrollIntoView();
     }
   };
 
   const renderHighlights = (props: RenderHighlightsProps) => (
     <Box>
       {notes.map((note) => (
-        <React.Fragment key={note.id}>
+        <React.Fragment key={note._id}>
           {note.highlightAreas
             .filter((area) => area.pageIndex === props.pageIndex)
             .map((area, idx) => (
@@ -135,7 +154,7 @@ const DisplayNotesSidebar = ({ document }: { document: DocumentInterface }) => {
                 )}
                 onClick={() => jumpToNote(note)}
                 ref={(ref): void => {
-                  noteEles.set(note.id, ref as HTMLElement);
+                  noteEles.set(note._id, ref as HTMLElement);
                 }}
               />
             ))}
@@ -143,13 +162,14 @@ const DisplayNotesSidebar = ({ document }: { document: DocumentInterface }) => {
       ))}
     </Box>
   );
+  6;
 
   const highlightPluginInstance = highlightPlugin({
     renderHighlightTarget,
     renderHighlightContent,
     renderHighlights,
   });
-  const fileUrl = document.url;
+  const fileUrl = _document.url;
   const { jumpToHighlightArea } = highlightPluginInstance;
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   return (
@@ -212,7 +232,7 @@ const DisplayNotesSidebar = ({ document }: { document: DocumentInterface }) => {
           return (
             <Paper
               elevation={3}
-              key={note.id}
+              key={note._id}
               sx={{
                 borderBottom: "1px solid rgba(0, 0, 0, .3)",
                 cursor: "pointer",
@@ -223,21 +243,29 @@ const DisplayNotesSidebar = ({ document }: { document: DocumentInterface }) => {
               // Jump to the associated highlight area
               onClick={() => jumpToHighlightArea(note.highlightAreas[0])}
             >
-              <blockquote
-                style={{
-                  borderLeft: "2px solid rgba(0, 0, 0, 0.2)",
-                  fontSize: "1rem",
-                  lineHeight: 1.5,
-                  margin: "0 0 8px 0",
-                  paddingLeft: "8px",
-                  textAlign: "justify",
-                  maxHeight: "100px",
-                  overflow: "hidden",
-                }}
-              >
-                {note.quote}
-              </blockquote>
-              {note.content}
+              <Stack direction="column" spacing={2}>
+                <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                  {note.addedBy}
+                </Typography>
+                <blockquote
+                  style={{
+                    borderLeft: "2px solid rgba(0, 0, 0, 0.2)",
+                    fontSize: "1rem",
+                    lineHeight: 1.5,
+                    margin: "0 0 8px 0",
+                    paddingLeft: "8px",
+                    textAlign: "justify",
+                    maxHeight: "100px",
+                    overflow: "hidden",
+                  }}
+                >
+                  {note.quote}
+                </blockquote>
+                {note.content}
+                <Button variant="contained" color="error">
+                  <DeleteIcon fontSize="small" />
+                </Button>
+              </Stack>
             </Paper>
           );
         })}
@@ -251,18 +279,11 @@ export default DisplayNotesSidebar;
 export async function getServerSideProps(context: { query: { id: any } }) {
   await dbConnect();
   const { id } = context.query;
-  const result = await document.findOne({ _id: id });
-  const doc = {
-    _id: result._id.toString(),
-    title: result.title,
-    url: result.url,
-    user: result.user,
-    reviewers: result.reviewers,
-    notes: result.notes,
-  };
+  const result = await document.findOne({ _id: id }).lean();
+
   return {
     props: {
-      document: doc,
+      _document: JSON.parse(JSON.stringify(result)),
     },
   };
 }

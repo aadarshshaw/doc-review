@@ -62,6 +62,22 @@ export default async function handler(
 
       break;
 
+    case "PUT":
+      const { doc_id, note_id } = req.query;
+      Document.findByIdAndUpdate(
+        doc_id,
+        { $push: { notes: note_id } },
+        { new: true }
+      )
+        .then((doc: any) => {
+          return res.status(200).json({ document: doc });
+        })
+        .catch((err: any) => {
+          return res.status(500).json({ error: "Something went wrong" });
+        });
+
+      break;
+
     case "DELETE":
       const { id: deleteId } = req.query;
       Document.findByIdAndDelete(deleteId)

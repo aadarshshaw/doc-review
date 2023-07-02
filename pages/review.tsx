@@ -29,7 +29,7 @@ import { useRouter } from "next/router";
 const defaultDocument: DocumentInterface = {
   _id: "",
   title: "",
-  url: "/Placement_Tech.pdf",
+  url: "/",
   user: "",
   reviewers: [],
   notes: [],
@@ -189,7 +189,8 @@ const DisplayNotesSidebar = () => {
     renderHighlightContent,
     renderHighlights,
   });
-  const fileUrl = document.url;
+  const fileUrl = document.url.replace("http", "https")
+  console.log(fileUrl);
   const { jumpToHighlightArea } = highlightPluginInstance;
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   return (

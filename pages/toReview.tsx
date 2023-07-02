@@ -24,7 +24,7 @@ export default function Review() {
       .catch((err) => {
         console.log(err);
       });
-  }, [status]);
+  }, [status, user]);
 
   return (
     <Box

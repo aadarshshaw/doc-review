@@ -1,10 +1,12 @@
 import { UserInterface } from "@/interface/user";
 import { Grid, Stack, Typography } from "@mui/material";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 
 export default function Profile() {
   const { status, data} = useSession();
   const user = data?.user as UserInterface;
+  if(status === "loading") return <div>Loading...</div>
   console.log(user);
   return (
     <Grid
@@ -16,8 +18,11 @@ export default function Profile() {
       }}
     >
       <Grid item xs={12} md={6}>
-        <img
+        <Image
           src={user.image}
+          width={500}
+          height={500}
+          unoptimized
           alt="profile"
           style={{
             display: "flex",

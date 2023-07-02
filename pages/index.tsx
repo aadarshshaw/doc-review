@@ -7,7 +7,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import axios from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Link from "next/link";
@@ -49,7 +49,7 @@ export default function Home() {
       .catch((err) => {
         console.log(err);
       });
-  }, [status]);
+  }, [status, user]);
 
   const clearModal = () => {
     setModalTitle("");

@@ -3,7 +3,11 @@ import axios from "axios";
 import { generateSHA1, generateSignature } from "@/utils/generateSignature";
 import getPublicIdFromUrl from "@/utils/getPublicIdFromUrl";
 import cloudinary from "@/config/cloudinary";
-
+export const config = {
+  api: {
+    externalResolver: true,
+  },
+}
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

@@ -1,7 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import Document from "../../models/document";
 import dbConnect from "../../utils/dbConnect";
-
+export const config = {
+  api: {
+    externalResolver: true,
+  },
+}
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse

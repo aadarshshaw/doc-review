@@ -1,6 +1,8 @@
 import {
+  Autocomplete,
   Box,
   Button,
+  Grid,
   Modal,
   Paper,
   Stack,
@@ -10,13 +12,12 @@ import {
 import { use, useEffect, useState } from "react";
 import axios from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import Link from "next/link";
 import { DocumentInterface } from "@/interface/document";
 import { UserInterface } from "@/interface/user";
 import { useSession } from "next-auth/react";
-import { getServerSession } from "next-auth";
-import { authOptions } from "./api/auth/[...nextauth]";
-import { stat } from "fs";
 
 const style = {
   position: "absolute" as "absolute",
@@ -38,6 +39,13 @@ export default function Home() {
   const [reviewers, setReviewers] = useState<string[]>([]);
   const { status, data } = useSession();
   const user = data?.user as UserInterface;
+  const [userOptions, setUserOptions] = useState<UserInterface[]>([]);
+
+  useEffect(() => {
+    axios.get("/api/user").then((res) => {
+      setUserOptions(res.data.users.map((user: UserInterface) => user.email));
+    });
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -63,6 +71,14 @@ export default function Home() {
   const handleClose = () => setOpen(false);
 
   const handleSubmit = async () => {
+    if (!modalFile) {
+      console.log("no file");
+      return;
+    }
+    if (!modalTitle) {
+      console.log("no title");
+      return;
+    }
     const formData = new FormData();
     formData.append("file", modalFile as File);
     formData.append("upload_preset", "pbr-files");
@@ -83,6 +99,17 @@ export default function Home() {
         clearModal();
       });
     setOpen(false);
+  };
+
+  const handleEdit = async (id: string) => {
+    const document = documents.find(
+      (doc) => doc._id === id
+    ) as DocumentInterface;
+    const newDocuments = documents.filter((doc) => doc._id !== id);
+    setModalFile(null);
+    setModalTitle(document.title);
+    setReviewers(document.reviewers);
+    setModalTitle(document.title);
   };
 
   const handleDelete = async (id: string) => {
@@ -110,119 +137,173 @@ export default function Home() {
   };
 
   return (
-    <>
-      <Box
+    <Box
+      sx={{
+        margin: 2,
+        justifyContent: "center",
+        alignItems: "center",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Button
+        variant={"contained"}
+        onClick={handleOpen}
         sx={{
-          margin: 2,
+          my: "auto",
+          height: "80%",
+          width: "50%",
+          maxWidth: 500,
+          bgcolor: "#7451eb",
+          ":hover": {
+            bgcolor: "#5f3dc4",
+          },
         }}
       >
-        <Button
-          variant={"contained"}
-          onClick={handleOpen}
-          sx={{
-            my: "auto",
-            height: "80%",
-            bgcolor: "#7451eb",
-            ":hover": {
-              bgcolor: "#5f3dc4",
-            },
-          }}
-        >
-          Create Document
-        </Button>
+        Create Document
+      </Button>
 
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box sx={style}>
-            <Stack spacing={2}>
-              <Typography variant="h5">New Document</Typography>
-              <TextField
-                id="outlined-basic"
-                label="Title"
-                variant="outlined"
-                value={modalTitle}
-                onChange={(e) => setModalTitle(e.target.value)}
-              />
-              <Typography variant="h6">Reviewers</Typography>
-              <TextField
-                id="outlined-basic"
-                label="Reviewers"
-                variant="outlined"
-                value={reviewers}
-                placeholder="comma separated usernames"
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <Stack spacing={2}>
+            <Typography variant="h5">New Document</Typography>
+            <TextField
+              required
+              id="outlined-basic"
+              label="Title"
+              variant="outlined"
+              value={modalTitle}
+              onChange={(e) => setModalTitle(e.target.value)}
+            />
+            <Typography variant="h6">Reviewers</Typography>
+            <Autocomplete
+              multiple
+              id="tags-standard"
+              options={userOptions}
+              defaultValue={[]}
+              freeSolo
+              value={reviewers}
+              onChange={(e, value) => setReviewers(value as string[])}
+              renderInput={(params) => (
+                <TextField {...params} variant="standard" label="Reviewers" />
+              )}
+            />
+            <Typography variant="h6">Upload File</Typography>
+            <Button variant="contained" component="label">
+              <input
+                type="file"
+                accept="pdf"
                 onChange={(e) =>
-                  setReviewers(
-                    e.target.value.split(",").map((reviewer) => reviewer.trim())
-                  )
+                  setModalFile(() => {
+                    if (e.target.files) {
+                      return e.target.files[0];
+                    }
+                    return null;
+                  })
                 }
               />
-              <Typography variant="h6">Upload File</Typography>
-              <Button variant="contained" component="label">
-                <input
-                  type="file"
-                  accept="pdf"
-                  onChange={(e) =>
-                    setModalFile(() => {
-                      if (e.target.files) {
-                        return e.target.files[0];
-                      }
-                      return null;
-                    })
-                  }
-                />
-              </Button>
-              <Button variant="contained" onClick={handleSubmit}>
-                Create
-              </Button>
-            </Stack>
-          </Box>
-        </Modal>
-
+            </Button>
+            <Button variant="contained" onClick={handleSubmit}>
+              Create
+            </Button>
+          </Stack>
+        </Box>
+      </Modal>
+      <Grid container spacing={2} sx={{}}>
         {documents.map((document) => {
           return (
-            <div key={document._id}>
-              <Paper
-                elevation={3}
-                sx={{
-                  my: 2,
-                  height: 50,
-                  display: "flex",
-                  flexDirection: "row",
-                }}
-              >
-                <Typography
-                  variant="h5"
+            <Grid item lg={3} md={4} sm={6} xs={12}>
+              <Box key={document._id}>
+                <Paper
+                  elevation={3}
                   sx={{
-                    mx: 2,
-                    my: "auto",
+                    my: { md: 2, xs: 1 },
+                    height: 250,
+                    padding: 2,
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  <Link href={document.url} target="_blank">
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      textAlign: "center",
+                      overflow: "hidden",
+                    }}
+                  >
                     {document.title}
-                  </Link>
-                </Typography>
-                <Button
-                  variant="contained"
-                  color="error"
-                  sx={{
-                    borderRadius: 0,
-                    marginLeft: "auto",
-                  }}
-                  onClick={() => {
-                    handleDelete(document._id);
-                  }}
-                >
-                  <DeleteIcon />
-                </Button>
-              </Paper>
-            </div>
+                  </Typography>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    <b>Reviewers</b>: {document.reviewers.join(", ")}
+                  </Typography>
+                  <Typography variant="subtitle1">
+                    <b>Comments added:</b> {document.notes.length}
+                  </Typography>
+
+                  <Stack
+                    direction={"row"}
+                    sx={{ marginTop: "auto" }}
+                    spacing={2}
+                  >
+                    <Button
+                      variant="contained"
+                      color="info"
+                      fullWidth
+                      sx={{
+                        borderRadius: 0,
+                        marginTop: "auto",
+                      }}
+                      onClick={() => {
+                        window.open(document.url);
+                      }}
+                    >
+                      <RemoveRedEyeIcon />
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="warning"
+                      fullWidth
+                      sx={{
+                        borderRadius: 0,
+                        marginTop: "auto",
+                      }}
+                      onClick={() => {
+                        handleEdit(document._id);
+                      }}
+                    >
+                      <EditIcon />
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      fullWidth
+                      sx={{
+                        borderRadius: 0,
+                        marginTop: "auto",
+                      }}
+                      onClick={() => {
+                        handleDelete(document._id);
+                      }}
+                    >
+                      <DeleteIcon />
+                    </Button>
+                  </Stack>
+                </Paper>
+              </Box>
+            </Grid>
           );
         })}
-      </Box>
-    </>
+      </Grid>
+    </Box>
   );
 }

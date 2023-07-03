@@ -1,4 +1,4 @@
-import { Paper, Typography, Button, Box } from "@mui/material";
+import { Paper, Typography, Button, Box, Grid, Stack } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PreviewIcon from "@mui/icons-material/Preview";
 import { useEffect, useState } from "react";
@@ -27,67 +27,80 @@ export default function Review() {
   }, [status, user]);
 
   return (
-    <Box
+    <Grid
+      container
       sx={{
         margin: 2,
       }}
+      spacing={2}
     >
       {documents.map((document) => {
         return (
-          <div key={document._id}>
+          <Grid item lg={3} md={4} sm={6} xs={12} key={document._id}>
             <Paper
               elevation={3}
               sx={{
-                my: 2,
-                height: 50,
+                my: { md: 2, xs: 1 },
+                height: 250,
+                padding: 2,
                 display: "flex",
-                flexDirection: "row",
+                flexDirection: "column",
               }}
             >
               <Typography
-                variant="h5"
+                variant="h4"
                 sx={{
-                  mx: 2,
-                  my: "auto",
+                  textAlign: "center",
+                  overflow: "hidden",
+                  padding: 1,
                 }}
               >
                 {document.title}
               </Typography>
-              <Button
-                variant="contained"
-                color="info"
-                sx={{
-                  marginLeft: "auto",
-                  borderRadius: 0,
-                }}
-                onClick={() => {
-                  router.push({
-                    pathname: "/review",
-                    query: { id: document._id },
-                  });
-                }}
-              >
-                <PreviewIcon />
-              </Button>
-              <Button
-                variant="contained"
-                color="error"
-                sx={{
-                  borderRadius: 0,
-                }}
-                onClick={() => {
-                  const newDocuments = documents.filter(
-                    (doc) => doc._id !== document._id
-                  );
-                  setDocuments(newDocuments);
-                }}
-              >
-                <DeleteIcon />
-              </Button>
+              <Typography variant="subtitle1">
+                <b>Author:</b> {document.user} <br></br>
+                <b>Comments added:</b> {document.notes.length} <br></br>
+                <b>Reviewers</b>: {document.reviewers.join(", ")}
+              </Typography>
+              <Stack direction={"row"} spacing={2} sx={{ marginTop: "auto" }}>
+                <Button
+                  variant="contained"
+                  color="info"
+                  fullWidth
+                  sx={{
+                    marginLeft: "auto",
+                    borderRadius: 0,
+                  }}
+                  onClick={() => {
+                    router.push({
+                      pathname: "/review",
+                      query: { id: document._id },
+                    });
+                  }}
+                >
+                  <PreviewIcon />
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  fullWidth
+                  sx={{
+                    borderRadius: 0,
+                  }}
+                  onClick={() => {
+                    const newDocuments = documents.filter(
+                      (doc) => doc._id !== document._id
+                    );
+                    setDocuments(newDocuments);
+                  }}
+                >
+                  <DeleteIcon />
+                </Button>
+              </Stack>
             </Paper>
-          </div>
+          </Grid>
         );
       })}
-    </Box>
+    </Grid>
   );
 }

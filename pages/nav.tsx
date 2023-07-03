@@ -11,7 +11,7 @@ import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
-import AdbIcon from "@mui/icons-material/Adb";
+import ArticleIcon from "@mui/icons-material/Article";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { UserInterface } from "@/interface/user";
@@ -49,7 +49,7 @@ function ResponsiveAppBar() {
   const { status, data } = useSession();
   if (status === "loading") return null;
   const user = data?.user as UserInterface;
-  
+
   return (
     <AppBar
       position="static"
@@ -59,7 +59,7 @@ function ResponsiveAppBar() {
     >
       <Container maxWidth={false}>
         <Toolbar disableGutters>
-          <AdbIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
+          <ArticleIcon sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} />
           <Typography
             variant="h6"
             noWrap
@@ -74,7 +74,7 @@ function ResponsiveAppBar() {
               textDecoration: "none",
             }}
           >
-            Peer Based Review
+            Doc Review
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -119,7 +119,7 @@ function ResponsiveAppBar() {
               ))}
             </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
+          <ArticleIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
           <Typography
             variant="h5"
             noWrap
@@ -136,7 +136,7 @@ function ResponsiveAppBar() {
               textDecoration: "none",
             }}
           >
-            Peer Based Review
+            Doc Review
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map((page) => (

@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   Grid,
+  LinearProgress,
   Modal,
   Paper,
   Stack,
@@ -136,6 +137,7 @@ export default function Home() {
       });
   };
 
+  if (status === "loading") return null;
   return (
     <Box
       sx={{
@@ -234,9 +236,13 @@ export default function Home() {
                     sx={{
                       textAlign: "center",
                       overflow: "hidden",
+                      padding: 1,
                     }}
                   >
                     {document.title}
+                  </Typography>
+                  <Typography variant="subtitle1">
+                    <b>Comments added:</b> {document.notes.length}
                   </Typography>
                   <Typography
                     variant="subtitle1"
@@ -245,9 +251,6 @@ export default function Home() {
                     }}
                   >
                     <b>Reviewers</b>: {document.reviewers.join(", ")}
-                  </Typography>
-                  <Typography variant="subtitle1">
-                    <b>Comments added:</b> {document.notes.length}
                   </Typography>
 
                   <Stack

@@ -59,7 +59,7 @@ const DisplayNotesSidebar = () => {
         console.log(err);
       });
   }
-  , [status, user]);
+  , [status, user, document_id]);
 
   const noteEles: Map<number, HTMLElement> = new Map();
 

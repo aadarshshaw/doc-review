@@ -217,7 +217,7 @@ export default function Home() {
       <Grid container spacing={2} sx={{}}>
         {documents.map((document) => {
           return (
-            <Grid item lg={3} md={4} sm={6} xs={12}>
+            <Grid item lg={3} md={4} sm={6} xs={12} key={document._id}>
               <Box key={document._id}>
                 <Paper
                   elevation={3}

@@ -26,6 +26,7 @@ export const authOptions: NextAuthOptions = {
           const newUser = new User({
             name: profile.name,
             email: profile.email,
+            // @ts-ignore
             image: profile.picture,
           });
           newUser

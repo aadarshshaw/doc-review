@@ -216,7 +216,11 @@ export default function Home() {
           </Stack>
         </Box>
       </Modal>
-      <Grid container spacing={2} sx={{}}>
+      <Grid
+        container
+        spacing={2}
+        sx={{ justifyContent: "center", alignItems: "center" }}
+      >
         {documents.map((document) => {
           return (
             <Grid item lg={3} md={4} sm={6} xs={12} key={document._id}>

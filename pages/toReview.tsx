@@ -27,80 +27,97 @@ export default function Review() {
   }, [status, user]);
 
   return (
-    <Grid
-      container
+    <Box
       sx={{
         margin: 2,
+        justifyContent: "center",
+        alignItems: "center",
+        display: "flex",
+        flexDirection: "column",
       }}
-      spacing={2}
     >
-      {documents.map((document) => {
-        return (
-          <Grid item lg={3} md={4} sm={6} xs={12} key={document._id}>
-            <Paper
-              elevation={3}
-              sx={{
-                my: { md: 2, xs: 1 },
-                height: 250,
-                padding: 2,
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <Typography
-                variant="h4"
-                sx={{
-                  textAlign: "center",
-                  overflow: "hidden",
-                  padding: 1,
-                }}
-              >
-                {document.title}
-              </Typography>
-              <Typography variant="subtitle1">
-                <b>Author:</b> {document.user} <br></br>
-                <b>Comments added:</b> {document.notes.length} <br></br>
-                <b>Reviewers</b>: {document.reviewers.join(", ")}
-              </Typography>
-              <Stack direction={"row"} spacing={2} sx={{ marginTop: "auto" }}>
-                <Button
-                  variant="contained"
-                  color="info"
-                  fullWidth
+      <Grid
+        container
+        sx={{
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+        spacing={2}
+      >
+        {documents.map((document) => {
+          return (
+            <Grid item lg={3} md={4} sm={6} xs={12} key={document._id}>
+              <Box key={document._id}>
+                <Paper
+                  elevation={3}
                   sx={{
-                    marginLeft: "auto",
-                    borderRadius: 0,
-                  }}
-                  onClick={() => {
-                    router.push({
-                      pathname: "/review",
-                      query: { id: document._id },
-                    });
+                    my: { md: 2, xs: 1 },
+                    height: 250,
+                    padding: 2,
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  <PreviewIcon />
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  fullWidth
-                  sx={{
-                    borderRadius: 0,
-                  }}
-                  onClick={() => {
-                    const newDocuments = documents.filter(
-                      (doc) => doc._id !== document._id
-                    );
-                    setDocuments(newDocuments);
-                  }}
-                >
-                  <DeleteIcon />
-                </Button>
-              </Stack>
-            </Paper>
-          </Grid>
-        );
-      })}
-    </Grid>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      textAlign: "center",
+                      overflow: "hidden",
+                      padding: 1,
+                    }}
+                  >
+                    {document.title}
+                  </Typography>
+                  <Typography variant="subtitle1">
+                    <b>Author:</b> {document.user} <br></br>
+                    <b>Comments added:</b> {document.notes.length} <br></br>
+                    <b>Reviewers</b>: {document.reviewers.join(", ")}
+                  </Typography>
+                  <Stack
+                    direction={"row"}
+                    spacing={2}
+                    sx={{ marginTop: "auto" }}
+                  >
+                    <Button
+                      variant="contained"
+                      color="info"
+                      fullWidth
+                      sx={{
+                        marginLeft: "auto",
+                        borderRadius: 0,
+                      }}
+                      onClick={() => {
+                        router.push({
+                          pathname: "/review",
+                          query: { id: document._id },
+                        });
+                      }}
+                    >
+                      <PreviewIcon />
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      fullWidth
+                      sx={{
+                        borderRadius: 0,
+                      }}
+                      onClick={() => {
+                        const newDocuments = documents.filter(
+                          (doc) => doc._id !== document._id
+                        );
+                        setDocuments(newDocuments);
+                      }}
+                    >
+                      <DeleteIcon />
+                    </Button>
+                  </Stack>
+                </Paper>
+              </Box>
+            </Grid>
+          );
+        })}
+      </Grid>
+    </Box>
   );
 }

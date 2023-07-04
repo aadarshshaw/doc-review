@@ -22,7 +22,6 @@ export default function Review() {
         setDocuments(res.data.documents);
       })
       .catch((err) => {
-        console.log(err);
       });
   }, [status, user]);
 

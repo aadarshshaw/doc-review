@@ -7,7 +7,6 @@ export default function Profile() {
   const { status, data} = useSession();
   const user = data?.user as UserInterface;
   if(status === "loading") return <div>Loading...</div>
-  console.log(user);
   return (
     <Grid
       container

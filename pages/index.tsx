@@ -115,8 +115,8 @@ export default function Landing() {
         {matches && (
           <Grid item md={6} xs={12}>
             <Image
-              src="/doc_ani.png"
-              alt="Picture of the author"
+              src="/landing.png"
+              alt="landing page image"
               width={583}
               height={428}
               style={{

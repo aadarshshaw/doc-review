@@ -56,7 +56,6 @@ export default function Home() {
         setDocuments(res.data.documents);
       })
       .catch((err) => {
-        console.log(err);
       });
   }, [status, user]);
 
@@ -73,11 +72,9 @@ export default function Home() {
 
   const handleSubmit = async () => {
     if (!modalFile) {
-      console.log("no file");
       return;
     }
     if (!modalTitle) {
-      console.log("no title");
       return;
     }
     const formData = new FormData();
@@ -121,19 +118,15 @@ export default function Home() {
     axios
       .delete("/api/cloudinary", { params: { url: document.url } })
       .then(() => {
-        console.log("deleted from cloudinary");
         axios
           .delete("/api/document", { params: { id } })
           .then(() => {
-            console.log("deleted from db");
             setDocuments(newDocuments);
           })
           .catch((err) => {
-            console.log(err);
           });
       })
       .catch((err) => {
-        console.log(err);
       });
   };
 

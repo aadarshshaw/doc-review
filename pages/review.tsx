@@ -29,7 +29,7 @@ import { useRouter } from "next/router";
 const defaultDocument: DocumentInterface = {
   _id: "",
   title: "",
-  url: "/",
+  url: "/blank.pdf",
   user: "",
   reviewers: [],
   notes: [],
@@ -51,15 +51,12 @@ const DisplayNotesSidebar = () => {
     axios
       .get("/api/document", { params: { id: document_id } })
       .then((res) => {
-        console.log(res.data.document);
         setDocument(res.data.document);
         setNotes(res.data.document.notes);
       })
       .catch((err) => {
-        console.log(err);
       });
-  }
-  , [status, user, document_id]);
+  }, [status, user, document_id]);
 
   const noteEles: Map<number, HTMLElement> = new Map();
 
@@ -107,8 +104,8 @@ const DisplayNotesSidebar = () => {
           addedBy: user?.email as string,
         };
         setNotes(notes.concat([note]));
-        props.cancel();
         setMessage("");
+        props.cancel();
       }
     };
 
@@ -189,8 +186,7 @@ const DisplayNotesSidebar = () => {
     renderHighlightContent,
     renderHighlights,
   });
-  const fileUrl = document.url.replace("http", "https")
-  console.log(fileUrl);
+  const fileUrl = document.url.replace("http", "https");
   const { jumpToHighlightArea } = highlightPluginInstance;
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
   return (

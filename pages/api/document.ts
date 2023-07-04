@@ -5,7 +5,7 @@ export const config = {
   api: {
     externalResolver: true,
   },
-}
+};
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -67,31 +67,74 @@ export default async function handler(
       break;
 
     case "PUT":
-      const { doc_id, note_id } = req.query;
-      Document.findByIdAndUpdate(
-        doc_id,
-        { $push: { notes: note_id } },
-        { new: true }
-      )
-        .then((doc: any) => {
-          return res.status(200).json({ document: doc });
-        })
-        .catch((err: any) => {
-          return res.status(500).json({ error: "Something went wrong" });
-        });
+      if (req.query.id && req.query.reviewer) {
+        const { id, reviewer } = req.query;
+        Document.findByIdAndUpdate(
+          id,
+          { $push: { reviewers: reviewer } },
+          { new: true }
+        )
+          .then((doc: any) => {
+            return res.status(200).json({ document: doc });
+          })
+          .catch((err: any) => {
+            return res.status(500).json({ error: "Something went wrong" });
+          });
+      }
+      if (req.query.doc_id && req.query.note_id) {
+        const { doc_id, note_id } = req.query;
+        Document.findByIdAndUpdate(
+          doc_id,
+          { $push: { notes: note_id } },
+          { new: true }
+        )
+          .then((doc: any) => {
+            return res.status(200).json({ document: doc });
+          })
+          .catch((err: any) => {
+            return res.status(500).json({ error: "Something went wrong" });
+          });
+      }
+      break;
 
+    case "PATCH":
+      if (req.body.id && req.body.title && req.body.reviewers) {
+        const { id, title, reviewers } = req.body;
+        console.log(id, title, reviewers);
+        Document.findByIdAndUpdate(id, { title, reviewers }, { new: true })
+          .then((doc: any) => {
+            return res.status(200).json({ document: doc });
+          })
+          .catch((err: any) => {
+            return res.status(500).json({ error: "Something went wrong" });
+          });
+      }
       break;
 
     case "DELETE":
-      const { id: deleteId } = req.query;
-      Document.findByIdAndDelete(deleteId)
-        .then((doc: any) => {
-          return res.status(200).json({ document: doc });
-        })
-        .catch((err: any) => {
-          return res.status(500).json({ error: "Something went wrong" });
-        });
-
+      if (req.query.id && req.query.reviewer) {
+        const { id, reviewer } = req.query;
+        Document.findByIdAndUpdate(
+          id,
+          { $pull: { reviewers: reviewer } },
+          { new: true }
+        )
+          .then((doc: any) => {
+            return res.status(200).json({ document: doc });
+          })
+          .catch((err: any) => {
+            return res.status(500).json({ error: "Something went wrong" });
+          });
+      } else {
+        const { id: deleteId } = req.query;
+        Document.findByIdAndDelete(deleteId)
+          .then((doc: any) => {
+            return res.status(200).json({ document: doc });
+          })
+          .catch((err: any) => {
+            return res.status(500).json({ error: "Something went wrong" });
+          });
+      }
       break;
     default:
       return res.status(405).end(`Method ${method} Not Allowed`);

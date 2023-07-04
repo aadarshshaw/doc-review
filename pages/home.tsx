@@ -1,43 +1,34 @@
 import {
-  Autocomplete,
   Box,
   Button,
+  ButtonGroup,
   Grid,
-  LinearProgress,
   Modal,
   Paper,
-  Stack,
-  TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import PreviewIcon from "@mui/icons-material/Preview";
 import axios from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
-import Link from "next/link";
 import { DocumentInterface } from "@/interface/document";
 import { UserInterface } from "@/interface/user";
 import { useSession } from "next-auth/react";
-
-const style = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  boxShadow: 24,
-  p: 4,
-  borderRadius: 2,
-};
+import router from "next/router";
+import CreateDocument from "./modals/createDocument";
+import EditDocument from "./modals/editModal";
 
 export default function Home() {
   const [documents, setDocuments] = useState<DocumentInterface[]>([]);
-  const [open, setOpen] = useState(false);
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalFile, setModalFile] = useState<File | null>(null);
-  const [reviewers, setReviewers] = useState<string[]>([]);
+  const [modalReviewers, setModalReviewers] = useState<string[]>([]);
+  const [docEditId, setDocEditId] = useState<string>("");
   const { status, data } = useSession();
   const user = data?.user as UserInterface;
   const [userOptions, setUserOptions] = useState<UserInterface[]>([]);
@@ -55,20 +46,32 @@ export default function Home() {
       .then((res) => {
         setDocuments(res.data.documents);
       })
-      .catch((err) => {
-      });
+      .catch((err) => {});
   }, [status, user]);
 
   const clearModal = () => {
     setModalTitle("");
     setModalFile(null);
-    setReviewers([]);
+    setModalReviewers([]);
+    setDocEditId("");
   };
 
-  const handleOpen = () => {
-    setOpen(true);
+  const handleOpenCreateModal = () => {
+    setOpenCreateModal(true);
   };
-  const handleClose = () => setOpen(false);
+  const handleCloseCreateModal = () => setOpenCreateModal(false);
+
+  const handleOpenEditModal = (id: string) => {
+    const document = documents.find(
+      (doc) => doc._id === id
+    ) as DocumentInterface;
+    setDocEditId(id);
+    setModalTitle(document.title);
+    setModalReviewers(document.reviewers);
+    setOpenEditModal(true);
+  };
+
+  const handleCloseEditModal = () => setOpenEditModal(false);
 
   const handleSubmit = async () => {
     if (!modalFile) {
@@ -89,25 +92,39 @@ export default function Home() {
         title: modalTitle,
         url: response.data.url,
         user: user.email,
-        reviewers: reviewers,
+        reviewers: modalReviewers,
       })
       .then((res) => res.data)
       .then((data) => {
         setDocuments((prev) => [...prev, data.document]);
         clearModal();
       });
-    setOpen(false);
+    setOpenCreateModal(false);
   };
 
-  const handleEdit = async (id: string) => {
-    const document = documents.find(
-      (doc) => doc._id === id
-    ) as DocumentInterface;
-    const newDocuments = documents.filter((doc) => doc._id !== id);
-    setModalFile(null);
-    setModalTitle(document.title);
-    setReviewers(document.reviewers);
-    setModalTitle(document.title);
+  const handleEdit = async () => {
+    if (!modalTitle) {
+      return;
+    }
+    axios
+      .patch("/api/document", {
+        id: docEditId,
+        title: modalTitle,
+        reviewers: modalReviewers,
+      })
+      .then((res) => {
+        setDocuments((prev) => {
+          const newDocuments = [...prev];
+          const index = newDocuments.findIndex((doc) => doc._id === docEditId);
+          newDocuments[index] = res.data.document;
+          return newDocuments;
+        });
+        clearModal();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    setOpenEditModal(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -123,17 +140,16 @@ export default function Home() {
           .then(() => {
             setDocuments(newDocuments);
           })
-          .catch((err) => {
-          });
+          .catch((err) => {});
       })
-      .catch((err) => {
-      });
+      .catch((err) => {});
   };
 
   if (status === "loading") return null;
   return (
     <Box
       sx={{
+        backgroundColor: "#f2f7fa",
         margin: 2,
         justifyContent: "center",
         alignItems: "center",
@@ -143,71 +159,50 @@ export default function Home() {
     >
       <Button
         variant={"contained"}
-        onClick={handleOpen}
+        onClick={handleOpenCreateModal}
         sx={{
           my: "auto",
           height: "80%",
           width: "50%",
           maxWidth: 500,
-          bgcolor: "#7451eb",
-          ":hover": {
-            bgcolor: "#5f3dc4",
-          },
         }}
       >
         Create Document
       </Button>
 
       <Modal
-        open={open}
-        onClose={handleClose}
+        open={openCreateModal}
+        onClose={handleCloseCreateModal}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
+        style={{ backdropFilter: "blur(2px)" }}
       >
-        <Box sx={style}>
-          <Stack spacing={2}>
-            <Typography variant="h5">New Document</Typography>
-            <TextField
-              required
-              id="outlined-basic"
-              label="Title"
-              variant="outlined"
-              value={modalTitle}
-              onChange={(e) => setModalTitle(e.target.value)}
-            />
-            <Typography variant="h6">Reviewers</Typography>
-            <Autocomplete
-              multiple
-              id="tags-standard"
-              options={userOptions}
-              defaultValue={[]}
-              freeSolo
-              value={reviewers}
-              onChange={(e, value) => setReviewers(value as string[])}
-              renderInput={(params) => (
-                <TextField {...params} variant="standard" label="Reviewers" />
-              )}
-            />
-            <Typography variant="h6">Upload File</Typography>
-            <Button variant="contained" component="label">
-              <input
-                type="file"
-                accept="pdf"
-                onChange={(e) =>
-                  setModalFile(() => {
-                    if (e.target.files) {
-                      return e.target.files[0];
-                    }
-                    return null;
-                  })
-                }
-              />
-            </Button>
-            <Button variant="contained" onClick={handleSubmit}>
-              Create
-            </Button>
-          </Stack>
-        </Box>
+        <CreateDocument
+          modalTitle={modalTitle}
+          setModalTitle={setModalTitle}
+          setModalFile={setModalFile}
+          modalReviewers={modalReviewers}
+          setModalReviewers={setModalReviewers}
+          userOptions={userOptions}
+          handleSubmit={handleSubmit}
+        />
+      </Modal>
+
+      <Modal
+        open={openEditModal}
+        onClose={handleCloseEditModal}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        style={{ backdropFilter: "blur(2px)" }}
+      >
+        <EditDocument
+          modalTitle={modalTitle}
+          setModalTitle={setModalTitle}
+          modalReviewers={modalReviewers}
+          setModalReviewers={setModalReviewers}
+          userOptions={userOptions}
+          handleEdit={handleEdit}
+        />
       </Modal>
       <Grid
         container
@@ -250,54 +245,68 @@ export default function Home() {
                     <b>Reviewers</b>: {document.reviewers.join(", ")}
                   </Typography>
 
-                  <Stack
-                    direction={"row"}
-                    sx={{ marginTop: "auto" }}
-                    spacing={2}
-                  >
-                    <Button
-                      variant="contained"
-                      color="info"
-                      fullWidth
-                      sx={{
-                        borderRadius: 0,
-                        marginTop: "auto",
-                      }}
-                      onClick={() => {
-                        window.open(document.url);
-                      }}
-                    >
-                      <RemoveRedEyeIcon />
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="warning"
-                      fullWidth
-                      sx={{
-                        borderRadius: 0,
-                        marginTop: "auto",
-                      }}
-                      onClick={() => {
-                        handleEdit(document._id);
-                      }}
-                    >
-                      <EditIcon />
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      fullWidth
-                      sx={{
-                        borderRadius: 0,
-                        marginTop: "auto",
-                      }}
-                      onClick={() => {
-                        handleDelete(document._id);
-                      }}
-                    >
-                      <DeleteIcon />
-                    </Button>
-                  </Stack>
+                  <ButtonGroup sx={{ marginTop: "auto" }} variant="text">
+                    <Tooltip title="View Document">
+                      <Button
+                        fullWidth
+                        sx={{
+                          borderRadius: 0,
+                          marginTop: "auto",
+                        }}
+                        onClick={() => {
+                          window.open(document.url);
+                        }}
+                      >
+                        <RemoveRedEyeIcon />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title="View Comments">
+                      <Button
+                        fullWidth
+                        sx={{
+                          borderRadius: 0,
+                          marginTop: "auto",
+                        }}
+                        onClick={() => {
+                          router.push({
+                            pathname: "/review",
+                            query: { id: document._id },
+                          });
+                        }}
+                      >
+                        <PreviewIcon />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title="Edit Document">
+                      <Button
+                        fullWidth
+                        sx={{
+                          borderRadius: 0,
+                          marginTop: "auto",
+                        }}
+                        onClick={() => {
+                          handleOpenEditModal(document._id);
+                        }}
+                      >
+                        <EditIcon />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title="Delete Document">
+                      <Button
+                        fullWidth
+                        color="error"
+                        sx={{
+                          borderRadius: 0,
+                          marginTop: "auto",
+                        }}
+                        onClick={() => {
+                          handleDelete(document._id);
+                        }}
+                      >
+                        <DeleteIcon />
+                      </Button>
+                    </Tooltip>
+                  </ButtonGroup>
                 </Paper>
               </Box>
             </Grid>

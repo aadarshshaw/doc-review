@@ -1,4 +1,12 @@
-import { Paper, Typography, Button, Box, Grid, Stack } from "@mui/material";
+import {
+  Paper,
+  Typography,
+  Button,
+  Box,
+  Grid,
+  ButtonGroup,
+  Tooltip,
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PreviewIcon from "@mui/icons-material/Preview";
 import { useEffect, useState } from "react";
@@ -21,9 +29,22 @@ export default function Review() {
       .then((res) => {
         setDocuments(res.data.documents);
       })
-      .catch((err) => {
-      });
+      .catch((err) => {});
   }, [status, user]);
+
+  const handleDelete = (id: string) => {
+    const newDocuments = documents.filter((doc) => doc._id !== id);
+    const document = documents.find((doc) => doc._id === id);
+    axios
+      .delete("/api/document", { params: { id, reviewer: user.email } })
+      .then((res) => {
+        console.log(res);
+        setDocuments(newDocuments.sort((a, b) => a._id.localeCompare(b._id)));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   return (
     <Box
@@ -72,45 +93,38 @@ export default function Review() {
                     <b>Comments added:</b> {document.notes.length} <br></br>
                     <b>Reviewers</b>: {document.reviewers.join(", ")}
                   </Typography>
-                  <Stack
-                    direction={"row"}
-                    spacing={2}
-                    sx={{ marginTop: "auto" }}
-                  >
-                    <Button
-                      variant="contained"
-                      color="info"
-                      fullWidth
-                      sx={{
-                        marginLeft: "auto",
-                        borderRadius: 0,
-                      }}
-                      onClick={() => {
-                        router.push({
-                          pathname: "/review",
-                          query: { id: document._id },
-                        });
-                      }}
-                    >
-                      <PreviewIcon />
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      fullWidth
-                      sx={{
-                        borderRadius: 0,
-                      }}
-                      onClick={() => {
-                        const newDocuments = documents.filter(
-                          (doc) => doc._id !== document._id
-                        );
-                        setDocuments(newDocuments);
-                      }}
-                    >
-                      <DeleteIcon />
-                    </Button>
-                  </Stack>
+                  <ButtonGroup sx={{ marginTop: "auto" }} variant="text">
+                    <Tooltip title="View Document">
+                      <Button
+                        color="info"
+                        fullWidth
+                        sx={{
+                          marginLeft: "auto",
+                          borderRadius: 0,
+                        }}
+                        onClick={() => {
+                          router.push({
+                            pathname: "/review",
+                            query: { id: document._id },
+                          });
+                        }}
+                      >
+                        <PreviewIcon />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip title="Delete Document">
+                      <Button
+                        color="error"
+                        fullWidth
+                        sx={{
+                          borderRadius: 0,
+                        }}
+                        onClick={() => handleDelete(document._id)}
+                      >
+                        <DeleteIcon />
+                      </Button>
+                    </Tooltip>
+                  </ButtonGroup>
                 </Paper>
               </Box>
             </Grid>

@@ -12,9 +12,6 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-    async redirect({}) {
-      return "/";
-    },
 
     async signIn({ profile }) {
       if (!profile?.email) {

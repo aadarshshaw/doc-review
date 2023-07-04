@@ -13,11 +13,11 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import ArticleIcon from "@mui/icons-material/Article";
 import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { UserInterface } from "@/interface/user";
 
 const pages = [
-  { name: "Home", href: "/" },
+  { name: "Home", href: "/home" },
   { name: "To Review", href: "/toReview" },
 ];
 const settings = ["Profile", "Logout"];
@@ -49,6 +49,8 @@ function ResponsiveAppBar() {
   const { status, data } = useSession();
   if (status === "loading") return null;
   const user = data?.user as UserInterface;
+
+  if (router.pathname === "/") return null;
 
   return (
     <AppBar
@@ -185,7 +187,13 @@ function ResponsiveAppBar() {
                   key={setting}
                   onClick={() => {
                     handleCloseUserMenu();
-                    router.push(`/${setting.toLowerCase().replace(" ", "-")}`);
+                    if (setting === "Logout") {
+                      signOut({
+                        callbackUrl: "/",
+                      });
+                    } else if (setting === "Profile") {
+                      router.push("/profile");
+                    }
                   }}
                 >
                   <Typography textAlign="center">{setting}</Typography>

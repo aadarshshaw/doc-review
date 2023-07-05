@@ -9,8 +9,13 @@ import {
   useTheme,
 } from "@mui/material";
 import ArticleIcon from "@mui/icons-material/Article";
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import ReviewsIcon from '@mui/icons-material/Reviews';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import ShieldIcon from '@mui/icons-material/Shield';
 import Image from "next/image";
 import { signIn } from "next-auth/react";
+import HomeFeature from "./components/home_features";
 
 export default function Landing() {
   const theme = useTheme();
@@ -20,7 +25,7 @@ export default function Landing() {
       sx={{
         padding: 2,
         px: { md: 10, xs: 2 },
-        height: "102vh",
+        height: "100vh",
         backgroundColor: "#f2f7fa",
       }}
     >
@@ -92,24 +97,53 @@ export default function Landing() {
               variant="h5"
               sx={{
                 fontWeight: "400",
+                color: "grey",
               }}
             >
               DocReview is a web app that allows you to upload documents and
               have them reviewed by your peers.
             </Typography>
-            <Button
-              variant="contained"
-              color="info"
+            <Stack
+              direction={"row"}
+              spacing={2}
               sx={{
-                width: 200,
-                borderRadius: 0,
-                backgroundColor: "#4944cd",
-                alignSelf: { xs: "center", md: "flex-start" },
+                marginTop: 2,
+                justifyContent: { xs: "center", md: "flex-start" },
               }}
-              onClick={() => signIn("google", { callbackUrl: "/home" })}
             >
-              Get Started
-            </Button>
+              <Button
+                variant="contained"
+                color="info"
+                sx={{
+                  width: 200,
+                  fontWeight: "600",
+                  borderRadius: 0,
+                  backgroundColor: "#4944cd",
+                  alignSelf: { xs: "center", md: "flex-start" },
+                }}
+                onClick={() => signIn("google", { callbackUrl: "/home" })}
+              >
+                Get Started
+              </Button>
+              <Button
+                variant="outlined"
+                color="info"
+                sx={{
+                  width: 200,
+                  borderRadius: 0,
+                  border: "2px solid #4944cd",
+                  fontWeight: "600",
+                  color: "#4944cd",
+                  alignSelf: { xs: "center", md: "flex-start" },
+                  ":hover": {
+                    border: "2px solid #7b52ff",
+                  },
+                }}
+                onClick={() => signIn("google", { callbackUrl: "/home" })}
+              >
+                Learn More
+              </Button>
+            </Stack>
           </Stack>
         </Grid>
         {matches && (
@@ -127,6 +161,77 @@ export default function Landing() {
             />
           </Grid>
         )}
+      </Grid>
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: "800",
+          marginTop: 10,
+          textAlign: "center",
+        }}
+      >
+        Features
+      </Typography>
+      <Grid
+        container
+        spacing={2}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: 2,
+          backgroundColor: "#f2f7fa",
+        }}
+      >
+        <Grid item md={3} sm={6} xs={12}>
+          <HomeFeature
+            title="Upload Documents"
+            description="Upload documents in the cloud and have them available anywhere and at anytime"
+            icon={
+              <div
+                style={{
+                  borderRadius: "50%",
+                }}
+              >
+                <CloudUploadIcon
+                  sx={{ fontSize: 60, color: "#4944cd" }}
+                ></CloudUploadIcon>
+              </div>
+            }
+          />
+        </Grid>
+        <Grid item md={3} sm={6} xs={12}>
+          <HomeFeature
+            title="Review Documents"
+            description="Examine the files that were posted by your colleagues and offer input on them"
+            icon={
+              <ReviewsIcon
+                sx={{ fontSize: 60, color: "#4944cd" }}
+              ></ReviewsIcon>
+            }
+          />
+        </Grid>
+        <Grid item md={3} sm={6} xs={12}>
+          <HomeFeature
+            title="Track Progress"
+            description="Keep an eye on your progress and count how many papers you've already gone through"
+            icon={
+              <TimelineIcon
+                sx={{ fontSize: 60, color: "#4944cd" }}
+              ></TimelineIcon>
+            }
+          />
+        </Grid>
+        <Grid item md={3} sm={6} xs={12}>
+          <HomeFeature
+            title="Secure Sharing"
+            description="All documents are shared only to those whom you choose to share them with"
+            icon={
+              <ShieldIcon
+                sx={{ fontSize: 60, color: "#4944cd" }}
+              ></ShieldIcon>
+            }
+          />
+        </Grid>
       </Grid>
     </Box>
   );

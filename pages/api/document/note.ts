@@ -5,7 +5,7 @@ export const config = {
   api: {
     externalResolver: true,
   },
-}
+};
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -24,6 +24,26 @@ export default async function handler(
       Document.findByIdAndUpdate(doc_id)
         .then((doc: any) => {
           doc.notes.push(newNote);
+          doc
+            .save()
+            .then((doc: any) => {
+              return res.status(200).json({ document: doc });
+            })
+            .catch((err: any) => {
+              return res.status(500).json({ error: err });
+            });
+        })
+        .catch((err: any) => {
+          return res.status(500).json({ error: err });
+        });
+
+      break;
+
+    case "DELETE":
+      const { document_id, note_id } = req.query;
+      Document.findByIdAndUpdate(document_id)
+        .then((doc: any) => {
+          doc.notes = doc.notes.filter((note: any) => note._id != note_id);
           doc
             .save()
             .then((doc: any) => {

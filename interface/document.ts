@@ -7,4 +7,6 @@ export interface DocumentInterface {
   user: string;
   reviewers: string[];
   notes: NoteInterface[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }

@@ -6,6 +6,7 @@ import {
   Grid,
   ButtonGroup,
   Tooltip,
+  Stack,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PreviewIcon from "@mui/icons-material/Preview";
@@ -34,7 +35,6 @@ export default function Review() {
 
   const handleDelete = (id: string) => {
     const newDocuments = documents.filter((doc) => doc._id !== id);
-    const document = documents.find((doc) => doc._id === id);
     axios
       .delete("/api/document", { params: { id, reviewer: user.email } })
       .then((res) => {
@@ -72,59 +72,91 @@ export default function Review() {
                   elevation={3}
                   sx={{
                     my: { md: 2, xs: 1 },
-                    height: 250,
                     padding: 2,
                     display: "flex",
                     flexDirection: "column",
                   }}
                 >
+                  <Stack direction="column" spacing={0.5}>
                   <Typography
-                    variant="h4"
-                    sx={{
-                      textAlign: "center",
-                      overflow: "hidden",
-                      padding: 1,
-                    }}
-                  >
-                    {document.title}
-                  </Typography>
-                  <Typography variant="subtitle1">
-                    <b>Author:</b> {document.user} <br></br>
-                    <b>Comments added:</b> {document.notes.length} <br></br>
-                    <b>Reviewers</b>: {document.reviewers.join(", ")}
-                  </Typography>
-                  <ButtonGroup sx={{ marginTop: "auto" }} variant="text">
-                    <Tooltip title="View Document">
-                      <Button
-                        color="info"
-                        fullWidth
+                      variant="h4"
+                      sx={{
+                        textAlign: "center",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {document.title}
+                    </Typography>
+                    <Typography variant="subtitle1">
+                      <b>Author:</b> {document.user}
+                    </Typography>
+                    <Typography variant="subtitle1">
+                      <b>Comments added:</b> {document.notes.length}
+                    </Typography>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      <b>Reviewers</b>:
+                      <Typography
+                        variant="subtitle1"
                         sx={{
-                          marginLeft: "auto",
-                          borderRadius: 0,
-                        }}
-                        onClick={() => {
-                          router.push({
-                            pathname: "/review",
-                            query: { id: document._id },
-                          });
+                          fontSize: 13,
+                          textOverflow: "ellipsis",
+                          height: 50,
+                          overflowY: "auto",
                         }}
                       >
-                        <PreviewIcon />
-                      </Button>
-                    </Tooltip>
-                    <Tooltip title="Delete Document">
-                      <Button
-                        color="error"
-                        fullWidth
-                        sx={{
-                          borderRadius: 0,
-                        }}
-                        onClick={() => handleDelete(document._id)}
-                      >
-                        <DeleteIcon />
-                      </Button>
-                    </Tooltip>
-                  </ButtonGroup>
+                        {document.reviewers.join(", ")}
+                      </Typography>
+                    </Typography>
+
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      <b>Date Added</b>:{" "}
+                      {document.createdAt
+                        ? new Date(document.createdAt).toLocaleDateString()
+                        : ""}
+                    </Typography>
+                    <ButtonGroup sx={{ marginTop: "auto" }} variant="text">
+                      <Tooltip title="View Document">
+                        <Button
+                          color="info"
+                          fullWidth
+                          sx={{
+                            marginLeft: "auto",
+                            borderRadius: 0,
+                          }}
+                          onClick={() => {
+                            router.push({
+                              pathname: "/review",
+                              query: { id: document._id },
+                            });
+                          }}
+                        >
+                          <PreviewIcon />
+                        </Button>
+                      </Tooltip>
+                      <Tooltip title="Delete Document">
+                        <Button
+                          color="error"
+                          fullWidth
+                          sx={{
+                            borderRadius: 0,
+                          }}
+                          onClick={() => handleDelete(document._id)}
+                        >
+                          <DeleteIcon />
+                        </Button>
+                      </Tooltip>
+                    </ButtonGroup>
+                  </Stack>
                 </Paper>
               </Box>
             </Grid>

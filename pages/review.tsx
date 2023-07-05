@@ -25,6 +25,7 @@ import axios from "axios";
 import { DocumentInterface } from "@/interface/document";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import { enqueueSnackbar } from "notistack";
 
 const defaultDocument: DocumentInterface = {
   _id: "",
@@ -44,7 +45,6 @@ const DisplayNotesSidebar = () => {
   const document_id = router.query.id as string;
 
   const user = data?.user;
-  let noteId = notes.length;
 
   useEffect(() => {
     if (!user) return;
@@ -54,8 +54,7 @@ const DisplayNotesSidebar = () => {
         setDocument(res.data.document);
         setNotes(res.data.document.notes);
       })
-      .catch((err) => {
-      });
+      .catch((err) => {});
   }, [status, user, document_id]);
 
   const noteEles: Map<number, HTMLElement> = new Map();
@@ -84,6 +83,21 @@ const DisplayNotesSidebar = () => {
       />
     </Box>
   );
+
+  const handleDeleteNote = async (id: number) => {
+    const note_id = id;
+    axios
+      .delete("/api/document/note", {
+        params: { note_id, document_id: document._id },
+      })
+      .then((res) => {
+        setNotes(notes.filter((note) => note._id !== note_id));
+        enqueueSnackbar("Note deleted", { variant: "success" });
+      })
+      .catch((err) => {
+        enqueueSnackbar(err, { variant: "error" });
+      });
+  };
 
   const renderHighlightContent = (props: RenderHighlightContentProps) => {
     const addNote = async () => {
@@ -279,7 +293,11 @@ const DisplayNotesSidebar = () => {
                   {note.quote}
                 </blockquote>
                 {note.content}
-                <Button variant="contained" color="error">
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => handleDeleteNote(note._id)}
+                >
                   <DeleteIcon fontSize="small" />
                 </Button>
               </Stack>

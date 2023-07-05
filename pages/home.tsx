@@ -5,6 +5,7 @@ import {
   Grid,
   Modal,
   Paper,
+  Stack,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -20,6 +21,7 @@ import { useSession } from "next-auth/react";
 import router from "next/router";
 import CreateDocument from "./modals/createDocument";
 import EditDocument from "./modals/editModal";
+import { enqueueSnackbar } from "notistack";
 
 export default function Home() {
   const [documents, setDocuments] = useState<DocumentInterface[]>([]);
@@ -97,7 +99,15 @@ export default function Home() {
       .then((res) => res.data)
       .then((data) => {
         setDocuments((prev) => [...prev, data.document]);
+        enqueueSnackbar("Document created successfully", {
+          variant: "success",
+        });
         clearModal();
+      })
+      .catch((err) => {
+        enqueueSnackbar(err, {
+          variant: "error",
+        });
       });
     setOpenCreateModal(false);
   };
@@ -119,10 +129,15 @@ export default function Home() {
           newDocuments[index] = res.data.document;
           return newDocuments;
         });
+        enqueueSnackbar("Document edited successfully", {
+          variant: "success",
+        });
         clearModal();
       })
       .catch((err) => {
-        console.log(err);
+        enqueueSnackbar(err, {
+          variant: "error",
+        });
       });
     setOpenEditModal(false);
   };
@@ -139,10 +154,21 @@ export default function Home() {
           .delete("/api/document", { params: { id } })
           .then(() => {
             setDocuments(newDocuments);
+            enqueueSnackbar("Document deleted successfully", {
+              variant: "warning",
+            });
           })
-          .catch((err) => {});
+          .catch((err) => {
+            enqueueSnackbar(err, {
+              variant: "error",
+            });
+          });
       })
-      .catch((err) => {});
+      .catch((err) => {
+        enqueueSnackbar(err, {
+          variant: "error",
+        });
+      });
   };
 
   if (status === "loading") return null;
@@ -217,96 +243,118 @@ export default function Home() {
                   elevation={3}
                   sx={{
                     my: { md: 2, xs: 1 },
-                    height: 250,
                     padding: 2,
                     display: "flex",
                     flexDirection: "column",
                   }}
                 >
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      textAlign: "center",
-                      overflow: "hidden",
-                      padding: 1,
-                    }}
-                  >
-                    {document.title}
-                  </Typography>
-                  <Typography variant="subtitle1">
-                    <b>Comments added:</b> {document.notes.length}
-                  </Typography>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    <b>Reviewers</b>: {document.reviewers.join(", ")}
-                  </Typography>
+                  <Stack direction="column" spacing={2}>
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        textAlign: "center",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {document.title}
+                    </Typography>
+                    <Typography variant="subtitle1">
+                      <b>Comments added:</b> {document.notes.length}
+                    </Typography>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      <b>Reviewers</b>:
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          fontSize: 13,
+                          textOverflow: "ellipsis",
+                          height: 50,
+                          overflowY: "auto",
+                        }}
+                      >
+                        {document.reviewers.join(", ")}
+                      </Typography>
+                    </Typography>
 
-                  <ButtonGroup sx={{ marginTop: "auto" }} variant="text">
-                    <Tooltip title="View Document">
-                      <Button
-                        fullWidth
-                        sx={{
-                          borderRadius: 0,
-                          marginTop: "auto",
-                        }}
-                        onClick={() => {
-                          window.open(document.url);
-                        }}
-                      >
-                        <RemoveRedEyeIcon />
-                      </Button>
-                    </Tooltip>
-                    <Tooltip title="View Comments">
-                      <Button
-                        fullWidth
-                        sx={{
-                          borderRadius: 0,
-                          marginTop: "auto",
-                        }}
-                        onClick={() => {
-                          router.push({
-                            pathname: "/review",
-                            query: { id: document._id },
-                          });
-                        }}
-                      >
-                        <PreviewIcon />
-                      </Button>
-                    </Tooltip>
-                    <Tooltip title="Edit Document">
-                      <Button
-                        fullWidth
-                        sx={{
-                          borderRadius: 0,
-                          marginTop: "auto",
-                        }}
-                        onClick={() => {
-                          handleOpenEditModal(document._id);
-                        }}
-                      >
-                        <EditIcon />
-                      </Button>
-                    </Tooltip>
-                    <Tooltip title="Delete Document">
-                      <Button
-                        fullWidth
-                        color="error"
-                        sx={{
-                          borderRadius: 0,
-                          marginTop: "auto",
-                        }}
-                        onClick={() => {
-                          handleDelete(document._id);
-                        }}
-                      >
-                        <DeleteIcon />
-                      </Button>
-                    </Tooltip>
-                  </ButtonGroup>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      <b>Date Added</b>:{" "}
+                      {document.createdAt
+                        ? new Date(document.createdAt).toLocaleDateString()
+                        : ""}
+                    </Typography>
+                    <ButtonGroup sx={{ marginTop: "auto" }} variant="text">
+                      <Tooltip title="View Document">
+                        <Button
+                          fullWidth
+                          sx={{
+                            borderRadius: 0,
+                            marginTop: "auto",
+                          }}
+                          onClick={() => {
+                            window.open(document.url);
+                          }}
+                        >
+                          <RemoveRedEyeIcon />
+                        </Button>
+                      </Tooltip>
+                      <Tooltip title="View Comments">
+                        <Button
+                          fullWidth
+                          sx={{
+                            borderRadius: 0,
+                            marginTop: "auto",
+                          }}
+                          onClick={() => {
+                            router.push({
+                              pathname: "/review",
+                              query: { id: document._id },
+                            });
+                          }}
+                        >
+                          <PreviewIcon />
+                        </Button>
+                      </Tooltip>
+                      <Tooltip title="Edit Document">
+                        <Button
+                          fullWidth
+                          sx={{
+                            borderRadius: 0,
+                            marginTop: "auto",
+                          }}
+                          onClick={() => {
+                            handleOpenEditModal(document._id);
+                          }}
+                        >
+                          <EditIcon />
+                        </Button>
+                      </Tooltip>
+                      <Tooltip title="Delete Document">
+                        <Button
+                          fullWidth
+                          color="error"
+                          sx={{
+                            borderRadius: 0,
+                            marginTop: "auto",
+                          }}
+                          onClick={() => {
+                            handleDelete(document._id);
+                          }}
+                        >
+                          <DeleteIcon />
+                        </Button>
+                      </Tooltip>
+                    </ButtonGroup>
+                  </Stack>
                 </Paper>
               </Box>
             </Grid>

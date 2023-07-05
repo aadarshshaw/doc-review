@@ -104,7 +104,7 @@ export default function Landing() {
               have them reviewed by your peers.
             </Typography>
             <Stack
-              direction={"row"}
+              direction={{ xs: "column", md: "row" }}
               spacing={2}
               sx={{
                 marginTop: 2,
@@ -139,7 +139,6 @@ export default function Landing() {
                     border: "2px solid #7b52ff",
                   },
                 }}
-                onClick={() => signIn("google", { callbackUrl: "/home" })}
               >
                 Learn More
               </Button>

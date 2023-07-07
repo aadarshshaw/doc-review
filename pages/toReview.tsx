@@ -28,7 +28,7 @@ export default function Review() {
     axios
       .get("/api/document", { params: { reviewer: user.email } })
       .then((res) => {
-        setDocuments(res.data.documents);
+        setDocuments(res.data.documents.reverse());
       })
       .catch((err) => {});
   }, [status, user]);
@@ -78,10 +78,12 @@ export default function Review() {
                   }}
                 >
                   <Stack direction="column" spacing={0.5}>
-                  <Typography
+                    <Typography
                       variant="h4"
                       sx={{
                         textAlign: "center",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
                         overflow: "hidden",
                       }}
                     >
@@ -100,19 +102,18 @@ export default function Review() {
                       }}
                     >
                       <b>Reviewers</b>:
-                      <Typography
-                        variant="subtitle1"
-                        sx={{
-                          fontSize: 13,
-                          textOverflow: "ellipsis",
-                          height: 50,
-                          overflowY: "auto",
-                        }}
-                      >
-                        {document.reviewers.join(", ")}
-                      </Typography>
                     </Typography>
-
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        fontSize: 13,
+                        textOverflow: "ellipsis",
+                        height: 50,
+                        overflowY: "auto",
+                      }}
+                    >
+                      {document.reviewers.join(", ")}
+                    </Typography>
                     <Typography
                       variant="subtitle1"
                       sx={{

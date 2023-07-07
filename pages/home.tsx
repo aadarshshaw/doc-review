@@ -20,7 +20,7 @@ import { UserInterface } from "@/interface/user";
 import { useSession } from "next-auth/react";
 import router from "next/router";
 import CreateDocument from "./modals/createDocument";
-import EditDocument from "./modals/editModal";
+import EditDocument from "./modals/editDocument";
 import { enqueueSnackbar } from "notistack";
 
 export default function Home() {
@@ -46,7 +46,7 @@ export default function Home() {
     axios
       .get("/api/document", { params: { user: user.email } })
       .then((res) => {
-        setDocuments(res.data.documents);
+        setDocuments(res.data.documents.reverse());
       })
       .catch((err) => {});
   }, [status, user]);
@@ -203,15 +203,17 @@ export default function Home() {
         aria-describedby="modal-modal-description"
         style={{ backdropFilter: "blur(2px)" }}
       >
-        <CreateDocument
-          modalTitle={modalTitle}
-          setModalTitle={setModalTitle}
-          setModalFile={setModalFile}
-          modalReviewers={modalReviewers}
-          setModalReviewers={setModalReviewers}
-          userOptions={userOptions}
-          handleSubmit={handleSubmit}
-        />
+        {
+          <CreateDocument
+            modalTitle={modalTitle}
+            setModalTitle={setModalTitle}
+            setModalFile={setModalFile}
+            modalReviewers={modalReviewers}
+            setModalReviewers={setModalReviewers}
+            userOptions={userOptions}
+            handleSubmit={handleSubmit}
+          />
+        }
       </Modal>
 
       <Modal
@@ -253,6 +255,8 @@ export default function Home() {
                       variant="h4"
                       sx={{
                         textAlign: "center",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
                         overflow: "hidden",
                       }}
                     >
@@ -268,17 +272,17 @@ export default function Home() {
                       }}
                     >
                       <b>Reviewers</b>:
-                      <Typography
-                        variant="subtitle1"
-                        sx={{
-                          fontSize: 13,
-                          textOverflow: "ellipsis",
-                          height: 50,
-                          overflowY: "auto",
-                        }}
-                      >
-                        {document.reviewers.join(", ")}
-                      </Typography>
+                    </Typography>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        fontSize: 13,
+                        textOverflow: "ellipsis",
+                        height: 50,
+                        overflowY: "auto",
+                      }}
+                    >
+                      {document.reviewers.join(", ")}
                     </Typography>
 
                     <Typography

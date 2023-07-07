@@ -15,28 +15,26 @@ const style = {
   borderRadius: 2,
 };
 
-const CreateDocument = React.forwardRef(
+const EditDocument = React.forwardRef(
   ({
     modalTitle,
     setModalTitle,
     modalReviewers,
     setModalReviewers,
-    setModalFile,
-    handleSubmit,
     userOptions,
+    handleEdit,
   }: {
     modalTitle: string;
-    setModalTitle: React.Dispatch<React.SetStateAction<string>>;
+    setModalTitle: (title: string) => void;
     modalReviewers: string[];
-    setModalReviewers: React.Dispatch<React.SetStateAction<string[]>>;
-    setModalFile: React.Dispatch<React.SetStateAction<File | null>>;
-    handleSubmit: () => void;
+    setModalReviewers: (reviewers: string[]) => void;
     userOptions: UserInterface[];
+    handleEdit: () => void;
   }, ref) => {
     return (
-      <Box sx={style} ref={ref}>
+      <Box sx={style}  ref={ref}>
         <Stack spacing={2}>
-          <Typography variant="h5">New Document</Typography>
+          <Typography variant="h5">Edit Document</Typography>
           <TextField
             required
             id="outlined-basic"
@@ -57,18 +55,8 @@ const CreateDocument = React.forwardRef(
               <TextField {...params} variant="standard" label="Reviewers" />
             )}
           />
-          <Typography variant="h6">Upload File</Typography>
-          <Button variant="contained" component="label">
-            <input
-              type="file"
-              accept="pdf"
-              onChange={(e) =>
-                setModalFile(e.target.files ? e.target.files[0] : null)
-              }
-            />
-          </Button>
-          <Button variant="contained" onClick={handleSubmit}>
-            Create
+          <Button variant="contained" onClick={handleEdit}>
+            Edit
           </Button>
         </Stack>
       </Box>
@@ -76,6 +64,6 @@ const CreateDocument = React.forwardRef(
   }
 );
 
-CreateDocument.displayName = "CreateDocument";
+EditDocument.displayName = "EditDocument";
 
-export default CreateDocument;
+export default EditDocument;

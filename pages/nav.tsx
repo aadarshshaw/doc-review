@@ -29,6 +29,7 @@ function ResponsiveAppBar() {
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
     null
   );
+  const [activePage, setActivePage] = React.useState("Home");
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -114,6 +115,7 @@ function ResponsiveAppBar() {
                   onClick={() => {
                     handleCloseNavMenu();
                     router.push(`${page.href}`);
+                    setActivePage(page.name);
                   }}
                 >
                   <Typography textAlign="center">{page.name}</Typography>
@@ -147,12 +149,18 @@ function ResponsiveAppBar() {
                 onClick={() => {
                   handleCloseNavMenu();
                   router.push(`${page.href}`);
+                  setActivePage(page.name);
                 }}
                 sx={{
                   my: 2,
+                  mx: 1,
                   color: "white",
                   display: "block",
                   textTransform: "none",
+                  '&:hover': {
+                    backgroundColor: activePage === page.name ? "#394d67" : "#1c2634",
+                  },
+                  bgcolor: activePage === page.name ? "#394d67" : "inherit",
                 }}
               >
                 {page.name}

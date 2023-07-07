@@ -18,7 +18,15 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
-import { Box, Paper, Stack, Typography, Button } from "@mui/material";
+import {
+  Box,
+  Paper,
+  Stack,
+  Typography,
+  Button,
+  Icon,
+  IconButton,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import { NoteInterface } from "@/interface/note";
 import axios from "axios";
@@ -40,6 +48,7 @@ const DisplayNotesSidebar = () => {
   const [message, setMessage] = useState("");
   const [notes, setNotes] = useState<NoteInterface[]>([]);
   const [document, setDocument] = useState<DocumentInterface>(defaultDocument);
+  const [disableDelete, setDisableDelete] = useState(false);
   const { status, data } = useSession();
   const router = useRouter();
   const document_id = router.query.id as string;
@@ -275,9 +284,25 @@ const DisplayNotesSidebar = () => {
               onClick={() => jumpToHighlightArea(note.highlightAreas[0])}
             >
               <Stack direction="column" spacing={2}>
-                <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
-                  {note.addedBy}
-                </Typography>
+                <Stack
+                  direction={"row"}
+                  sx={{
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                    {note.addedBy?.substring(0, note.addedBy.indexOf("@"))}
+                  </Typography>
+                  {note.addedBy === user?.email && (
+                    <IconButton
+                      color="error"
+                      onClick={() => handleDeleteNote(note._id)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  )}
+                </Stack>
                 <blockquote
                   style={{
                     borderLeft: "2px solid rgba(0, 0, 0, 0.2)",
@@ -293,13 +318,6 @@ const DisplayNotesSidebar = () => {
                   {note.quote}
                 </blockquote>
                 {note.content}
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={() => handleDeleteNote(note._id)}
-                >
-                  <DeleteIcon fontSize="small" />
-                </Button>
               </Stack>
             </Paper>
           );

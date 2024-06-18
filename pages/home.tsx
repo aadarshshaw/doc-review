@@ -35,11 +35,17 @@ export default function Home() {
   const user = data?.user as UserInterface;
   const [userOptions, setUserOptions] = useState<UserInterface[]>([]);
 
-  useEffect(() => {
-    axios.get("/api/user").then((res) => {
-      setUserOptions(res.data.users.map((user: UserInterface) => user.email));
-    });
-  }, []);
+  // useEffect(() => {
+  //   axios
+  //     .get("/api/user", {
+  //       params: {
+  //         all: true,
+  //       },
+  //     })
+  //     .then((res) => {
+  //       setUserOptions(res.data.users.map((user: UserInterface) => user.email));
+  //     });
+  // }, []);
 
   useEffect(() => {
     if (!user) return;

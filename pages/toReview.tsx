@@ -38,12 +38,9 @@ export default function Review() {
     axios
       .delete("/api/document", { params: { id, reviewer: user.email } })
       .then((res) => {
-        console.log(res);
-        setDocuments(newDocuments.sort((a, b) => a._id.localeCompare(b._id)));
+        setDocuments(newDocuments);
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => {});
   };
 
   return (

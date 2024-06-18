@@ -100,7 +100,6 @@ export default async function handler(
     case "PATCH":
       if (req.body.id && req.body.title && req.body.reviewers) {
         const { id, title, reviewers } = req.body;
-        console.log(id, title, reviewers);
         Document.findByIdAndUpdate(id, { title, reviewers }, { new: true })
           .then((doc: any) => {
             return res.status(200).json({ document: doc });

@@ -16,14 +16,36 @@ export default async function handler(
   const { method } = req;
   switch (method) {
     case "GET":
-      User.find({})
-        .then((users: any) => {
-          return res.status(200).json({ users });
-        })
-        .catch((err: any) => {
-          return res.status(500).json({ error: err });
-        });
-      break;
+      if (req.query.emails) {
+        const emails: string[] = (await JSON.parse(
+          req.query.emails as string
+        )) as string[];
+        User.find({ email: { $in: emails } })
+          .then((users: any) => {
+            const data = users.map((user: any) => {
+              return {
+                name: user.name,
+                email: user.email,
+                image: user.image,
+              };
+            });
+            return res.status(200).json({ data });
+          })
+          .catch((err: any) => {
+            return res.status(500).json({ error: err });
+          });
+        break;
+      }
+      if (req.query.all) {
+        User.find({})
+          .then((users: any) => {
+            return res.status(200).json({ users });
+          })
+          .catch((err: any) => {
+            return res.status(500).json({ error: err });
+          });
+        break;
+      }
     case "POST":
       const { name, email, image } = req.body;
       const newUser = new User({

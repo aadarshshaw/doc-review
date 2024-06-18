@@ -12,7 +12,6 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-
     async signIn({ profile }) {
       if (!profile?.email) {
         return false;
@@ -29,11 +28,9 @@ export const authOptions: NextAuthOptions = {
           newUser
             .save()
             .then((user: any) => {
-              console.log("New user created: ", user);
               return true;
             })
             .catch((err: any) => {
-              console.log("Error creating new user: ", err);
               return false;
             });
         }

@@ -21,6 +21,10 @@ export const NoteSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    resolved: {
+      type: Boolean,
+      required: true,
+    },
   },
   {
     timestamps: true,

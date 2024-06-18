@@ -20,7 +20,7 @@ const pages = [
   { name: "Home", href: "/home" },
   { name: "To Review", href: "/toReview" },
 ];
-const settings = ["Profile", "Logout"];
+const settings = ["Logout"];
 
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(

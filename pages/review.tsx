@@ -15,17 +15,23 @@ import {
   Worker,
 } from "@react-pdf-viewer/core";
 import DeleteIcon from "@mui/icons-material/Delete";
-
+import CheckIcon from "@mui/icons-material/Check";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import CrossIcon from "@mui/icons-material/Close";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import {
   Box,
-  Paper,
   Stack,
   Typography,
   Button,
-  Icon,
+  Tooltip as MuiTooltip,
   IconButton,
+  AccordionSummary,
+  Accordion,
+  AccordionActions,
+  AccordionDetails,
+  Avatar,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { NoteInterface } from "@/interface/note";
@@ -44,15 +50,20 @@ const defaultDocument: DocumentInterface = {
   notes: [],
 };
 
+interface UserImage {
+  name: string;
+  email: string;
+  image: string;
+}
+
 const DisplayNotesSidebar = () => {
   const [message, setMessage] = useState("");
   const [notes, setNotes] = useState<NoteInterface[]>([]);
   const [document, setDocument] = useState<DocumentInterface>(defaultDocument);
-  const [disableDelete, setDisableDelete] = useState(false);
   const { status, data } = useSession();
   const router = useRouter();
   const document_id = router.query.id as string;
-
+  const [avatarImages, setImg] = useState<UserImage[]>([]);
   const user = data?.user;
 
   useEffect(() => {
@@ -65,6 +76,19 @@ const DisplayNotesSidebar = () => {
       })
       .catch((err) => {});
   }, [status, user, document_id]);
+
+  useEffect(() => {
+    if (!notes) return;
+    const emails = new Set(notes.map((note) => note.addedBy));
+    axios
+      .get("/api/user", {
+        params: { emails: JSON.stringify(Array.from(emails)) },
+      })
+      .then((res) => {
+        setImg(res.data.data);
+      })
+      .catch((err) => {});
+  }, [notes]);
 
   const noteEles: Map<number, HTMLElement> = new Map();
 
@@ -108,10 +132,37 @@ const DisplayNotesSidebar = () => {
       });
   };
 
+  const handleResolveNote = async (id: number, resolved: boolean) => {
+    const note_id = id;
+    axios
+      .put("/api/document/note", {
+        note_id,
+        document_id: document._id,
+        resolved,
+      })
+      .then((res) => {
+        enqueueSnackbar(
+          `Note marked as ${resolved ? "resolved" : "unresolved"}`,
+          { variant: "success" }
+        );
+        setNotes(
+          notes.map((note) => {
+            if (note._id === note_id) {
+              note.resolved = resolved;
+            }
+            return note;
+          })
+        );
+      })
+      .catch((err) => {
+        enqueueSnackbar(err, { variant: "error" });
+      });
+  };
+
   const renderHighlightContent = (props: RenderHighlightContentProps) => {
     const addNote = async () => {
       if (message !== "") {
-        const response = await axios.put("/api/document/note", {
+        const response = await axios.post("/api/document/note", {
           doc_id: document._id,
           content: message,
           highlightAreas: props.highlightAreas,
@@ -125,6 +176,7 @@ const DisplayNotesSidebar = () => {
           highlightAreas: props.highlightAreas,
           quote: props.selectedText,
           addedBy: user?.email as string,
+          resolved: false,
         };
         setNotes(notes.concat([note]));
         setMessage("");
@@ -259,7 +311,12 @@ const DisplayNotesSidebar = () => {
       >
         <Typography
           variant="h4"
-          sx={{ textAlign: "center", fontWeight: "bold", fontSize: "1.5rem" }}
+          sx={{
+            textAlign: "center",
+            fontWeight: "bold",
+            fontSize: "1.5rem",
+            marginBottom: "8px",
+          }}
         >
           Comments
         </Typography>
@@ -268,60 +325,93 @@ const DisplayNotesSidebar = () => {
             No Comments have been made yet!
           </Box>
         )}
-        {notes.map((note) => {
-          return (
-            <Paper
-              elevation={3}
+        <Stack direction="column" spacing={2}>
+          {notes.map((note) => (
+            <Accordion
               key={note._id}
-              sx={{
-                borderBottom: "1px solid rgba(0, 0, 0, .3)",
-                cursor: "pointer",
-                padding: "8px",
-                wordBreak: "break-all",
-                margin: "8px 0",
+              defaultExpanded={!note.resolved}
+              onClick={() => {
+                jumpToHighlightArea(note.highlightAreas[0]);
               }}
-              // Jump to the associated highlight area
-              onClick={() => jumpToHighlightArea(note.highlightAreas[0])}
             >
-              <Stack direction="column" spacing={2}>
-                <Stack
-                  direction={"row"}
-                  sx={{
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
-                    {note.addedBy?.substring(0, note.addedBy.indexOf("@"))}
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel3-content"
+                id="panel3-header"
+              >
+                <Stack direction="row" spacing={2}>
+                  <MuiTooltip title={note.addedBy}>
+                    <Avatar
+                      src={
+                        avatarImages.find((user) => user.email === note.addedBy)
+                          ?.image
+                      }
+                      sx={{
+                        backgroundColor: "primary.main",
+                        color: "primary.contrastText",
+                        width: "24px",
+                        height: "24px",
+                      }}
+                      imgProps={{
+                        referrerPolicy: "no-referrer",
+                      }}
+                    ></Avatar>
+                  </MuiTooltip>
+                  <Typography variant="subtitle2" sx={{ overflow: "hidden" }}>
+                    {note.quote}
                   </Typography>
-                  {note.addedBy === user?.email && (
-                    <IconButton
-                      color="error"
-                      onClick={() => handleDeleteNote(note._id)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  )}
                 </Stack>
-                <blockquote
-                  style={{
-                    borderLeft: "2px solid rgba(0, 0, 0, 0.2)",
-                    fontSize: "1rem",
-                    lineHeight: 1.5,
-                    margin: "0 0 8px 0",
-                    paddingLeft: "8px",
-                    textAlign: "justify",
-                    maxHeight: "100px",
-                    overflow: "hidden",
-                  }}
-                >
-                  {note.quote}
-                </blockquote>
-                {note.content}
-              </Stack>
-            </Paper>
-          );
-        })}
+              </AccordionSummary>
+              <AccordionDetails
+                sx={{
+                  wordBreak: "break-all",
+                }}
+              >
+                <Box>{note.content}</Box>
+              </AccordionDetails>
+              <AccordionActions>
+                <Box>
+                  {user?.email == document.user && !!!note.resolved && (
+                    <MuiTooltip title="Mark as resolved">
+                      <IconButton
+                        color="success"
+                        sx={{
+                          marginLeft: "auto",
+                        }}
+                        onClick={() => handleResolveNote(note._id, true)}
+                      >
+                        <CheckIcon fontSize="small" />
+                      </IconButton>
+                    </MuiTooltip>
+                  )}
+                  {user?.email == document.user && note.resolved && (
+                    <MuiTooltip title="Mark as unresolved">
+                      <IconButton
+                        color="error"
+                        sx={{
+                          marginLeft: "auto",
+                        }}
+                        onClick={() => handleResolveNote(note._id, false)}
+                      >
+                        <CrossIcon fontSize="small" />
+                      </IconButton>
+                    </MuiTooltip>
+                  )}
+                  {note.addedBy === user?.email && (
+                    <MuiTooltip title="Delete Comment">
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDeleteNote(note._id)}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </MuiTooltip>
+                  )}
+                </Box>
+              </AccordionActions>
+            </Accordion>
+          ))}
+        </Stack>
       </Box>
     </Stack>
   );

@@ -52,4 +52,6 @@ const ConfirmDeletion = React.forwardRef(
   }
 );
 
+ConfirmDeletion.displayName = "ConfirmDeletion";
+
 export default ConfirmDeletion;

@@ -9,7 +9,7 @@ import {
   FormGroup,
 } from "@mui/material";
 import React, { useState } from "react";
-import handleReminders from "../callbacks/handleReminders";
+import handleReminders from "../../callbacks/handleReminders";
 
 const style = {
   position: "absolute" as "absolute",
@@ -45,7 +45,7 @@ const SendReminders = React.forwardRef(
           <Stack spacing={2}>
             <Typography variant="h5">Send Reminders</Typography>
             <FormGroup>
-              {reviewers.map((reviewer) => (
+              {reviewers && reviewers.map((reviewer) => (
                 <FormControlLabel
                   key={reviewer}
                   control={<Checkbox />}
@@ -93,5 +93,7 @@ const SendReminders = React.forwardRef(
     );
   }
 );
+
+SendReminders.displayName = "SendReminders";
 
 export default SendReminders;

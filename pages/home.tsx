@@ -23,9 +23,9 @@ import router from "next/router";
 import CreateDocument from "./modals/createDocument";
 import EditDocument from "./modals/editDocument";
 import ConfirmDeletion from "./modals/confirmDeletion";
-import handleSubmit from "./callbacks/handleSubmit";
-import handleEdit from "./callbacks/handleEdit";
-import handleDelete from "./callbacks/handleDelete";
+import handleSubmit from "../callbacks/handleSubmit";
+import handleEdit from "../callbacks/handleEdit";
+import handleDelete from "../callbacks/handleDelete";
 import SendReminders from "./modals/sendReminders";
 
 export default function Home() {

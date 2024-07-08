@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   ButtonGroup,
+  Dialog,
   Grid,
   Modal,
   Paper,
@@ -277,7 +278,7 @@ export default function Home() {
           );
         })}
       </Grid>
-      <Modal
+      <Dialog
         open={openCreateModal}
         onClose={() => handleModalState(setOpenCreateModal, false)}
         style={{ backdropFilter: "blur(2px)" }}
@@ -303,9 +304,9 @@ export default function Home() {
             }
           />
         }
-      </Modal>
+      </Dialog>
 
-      <Modal
+      <Dialog
         open={openEditModal}
         onClose={handleCloseEditModal}
         style={{ backdropFilter: "blur(2px)" }}
@@ -327,9 +328,9 @@ export default function Home() {
             })
           }
         />
-      </Modal>
+      </Dialog>
 
-      <Modal
+      <Dialog
         open={openDeleteConfirmationModal}
         onClose={() => handleModalState(setOpenDeleteConfirmationModal, false)}
         style={{ backdropFilter: "blur(2px)" }}
@@ -348,9 +349,9 @@ export default function Home() {
             })
           }
         />
-      </Modal>
+      </Dialog>
 
-      <Modal
+      <Dialog
         open={openReminderModal}
         onClose={() => handleModalState(setOpenReminderModal, false)}
         style={{ backdropFilter: "blur(2px)" }}
@@ -363,7 +364,7 @@ export default function Home() {
             handleModalState(setOpenReminderModal, false)
           }
         />
-      </Modal>
+      </Dialog>
     </Box>
   );
 }

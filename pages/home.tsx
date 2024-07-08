@@ -24,9 +24,9 @@ import router from "next/router";
 import CreateDocument from "./modals/createDocument";
 import EditDocument from "./modals/editDocument";
 import ConfirmDeletion from "./modals/confirmDeletion";
-import handleSubmit from "../callbacks/handleSubmit";
-import handleEdit from "../callbacks/handleEdit";
-import handleDelete from "../callbacks/handleDelete";
+import handleSubmit from "../callbacks/home/handleSubmit";
+import handleEdit from "../callbacks/home/handleEdit";
+import handleDelete from "../callbacks/home/handleDelete";
 import SendReminders from "./modals/sendReminders";
 
 export default function Home() {
@@ -44,21 +44,21 @@ export default function Home() {
   const user = data?.user as UserInterface;
   const [userOptions, setUserOptions] = useState<UserInterface[]>([]);
 
-  // useEffect(() => {
-  //   axios
-  //     .get("/api/user", {
-  //       params: {
-  //         all: true,
-  //       },
-  //     })
-  //     .then((res) => {
-  //       setUserOptions(
-  //         res.data.users.map(
-  //           (user: UserInterface) => user.name + " " + user.email
-  //         )
-  //       );
-  //     });
-  // }, []);
+  useEffect(() => {
+    axios
+      .get("/api/user", {
+        params: {
+          all: true,
+        },
+      })
+      .then((res) => {
+        setUserOptions(
+          res.data.users
+            .map((user: UserInterface) => user.name + " " + user.email)
+            .toSorted()
+        );
+      });
+  }, []);
 
   useEffect(() => {
     if (!user) return;

@@ -9,10 +9,10 @@ import {
   useTheme,
 } from "@mui/material";
 import ArticleIcon from "@mui/icons-material/Article";
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import ReviewsIcon from '@mui/icons-material/Reviews';
-import TimelineIcon from '@mui/icons-material/Timeline';
-import ShieldIcon from '@mui/icons-material/Shield';
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import ReviewsIcon from "@mui/icons-material/Reviews";
+import TimelineIcon from "@mui/icons-material/Timeline";
+import ShieldIcon from "@mui/icons-material/Shield";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 import HomeFeature from "./components/home_features";
@@ -51,11 +51,15 @@ export default function Landing() {
             variant="contained"
             color="info"
             sx={{
-              borderRadius: 0,
+              borderRadius: 5,
               marginLeft: "auto !important",
               backgroundColor: "#4944cd",
               textTransform: "none",
               px: 5,
+              alignSelf: { xs: "center", md: "flex-start" },
+              ":hover": {
+                backgroundColor: "#7b52ff",
+              },
             }}
             onClick={() => signIn("google", { callbackUrl: "/home" })}
           >
@@ -120,6 +124,9 @@ export default function Landing() {
                   borderRadius: 0,
                   backgroundColor: "#4944cd",
                   alignSelf: { xs: "center", md: "flex-start" },
+                  ":hover": {
+                    backgroundColor: "#7b52ff",
+                  },
                 }}
                 onClick={() => signIn("google", { callbackUrl: "/home" })}
               >
@@ -225,9 +232,7 @@ export default function Landing() {
             title="Secure Sharing"
             description="All documents are shared only to those whom you choose to share them with"
             icon={
-              <ShieldIcon
-                sx={{ fontSize: 60, color: "#4944cd" }}
-              ></ShieldIcon>
+              <ShieldIcon sx={{ fontSize: 60, color: "#4944cd" }}></ShieldIcon>
             }
           />
         </Grid>

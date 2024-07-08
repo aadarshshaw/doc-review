@@ -67,7 +67,7 @@ function ResponsiveAppBar() {
             variant="h6"
             noWrap
             component="a"
-            href="/"
+            href="/home"
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },
@@ -157,8 +157,9 @@ function ResponsiveAppBar() {
                   color: "white",
                   display: "block",
                   textTransform: "none",
-                  '&:hover': {
-                    backgroundColor: activePage === page.name ? "#394d67" : "#1c2634",
+                  "&:hover": {
+                    backgroundColor:
+                      activePage === page.name ? "#394d67" : "#1c2634",
                   },
                   bgcolor: activePage === page.name ? "#394d67" : "inherit",
                 }}

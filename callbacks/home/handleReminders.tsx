@@ -9,11 +9,25 @@ interface Props {
   handleCloseReminderModal: () => void;
 }
 
+
+const content = (sender: string, title: string) => `<div>
+    <h1>Hi!</h1>
+    <p>
+      You have been invited by ${sender} to review the following document: ${title}
+    </p>
+    <p>Please go to docreview.vercel.app to review.</p>
+
+    <p>Thank you!</p>
+
+    <p>DocReview Team</p>
+  </div>`;
+
+
 const handleReminders = async (props: Props): Promise<any> => {
   axios
     .post("/api/mail", {
-      title: props.title,
-      sender: props.name,
+      subject: `Request to Review ${props.title}`,
+      content: content(props.name, props.title),
       emails: props.reviewers,
     })
     .then(() => {

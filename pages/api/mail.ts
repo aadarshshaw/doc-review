@@ -15,19 +15,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const info = await transporter.sendMail({
     from: "DocReview Team <aadarshshaw13@gmail.com>",
     to: req.body.emails,
-    subject: `Request to review ${req.body.title}`,
+    subject: req.body.subject,
     text: "",
-    html: `<div>
-    <h1>Hi!</h1>
-    <p>
-      You have been invited by ${req.body.sender} to review the following document: ${req.body.title}
-    </p>
-    <p>Please go to docreview.vercel.app to review.</p>
-
-    <p>Thank you!</p>
-
-    <p>DocReview Team</p>
-  </div>`,
+    html: req.body.content,
   });
 
   console.log("Message sent: %s", info.messageId);

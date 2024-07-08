@@ -40,6 +40,7 @@ import { DocumentInterface } from "@/interface/document";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { enqueueSnackbar } from "notistack";
+import { ConstructionOutlined } from "@mui/icons-material";
 
 const defaultDocument: DocumentInterface = {
   _id: "",
@@ -69,12 +70,16 @@ const DisplayNotesSidebar = () => {
   useEffect(() => {
     if (!user) return;
     axios
-      .get("/api/document", { params: { id: document_id } })
+      .get("/api/document", {
+        params: { id: document_id, reviewer: user.email },
+      })
       .then((res) => {
         setDocument(res.data.document);
         setNotes(res.data.document.notes);
       })
-      .catch((err) => {});
+      .catch((err) => {
+        router.push("/401");
+      });
   }, [status, user, document_id]);
 
   useEffect(() => {

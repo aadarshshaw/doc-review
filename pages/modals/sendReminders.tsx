@@ -8,7 +8,7 @@ import {
   FormGroup,
 } from "@mui/material";
 import React, { useState } from "react";
-import handleReminders from "../../callbacks/handleReminders";
+import handleReminders from "../../callbacks/home/handleReminders";
 
 const style = {
   bgcolor: "#f2f7fa",
@@ -16,6 +16,7 @@ const style = {
   p: 4,
   borderRadius: 2,
 };
+
 const SendReminders = React.forwardRef(
   (
     {

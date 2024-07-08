@@ -36,6 +36,12 @@ const handleSubmit = async (props: Props): Promise<any> => {
     });
     return;
   }
+  if (props.modalFile.name.split(".").pop() !== "pdf") {
+    enqueueSnackbar("Only PDF files are allowed", {
+      variant: "error",
+    });
+    return;
+  }
   const formData = new FormData();
   formData.append("file", props.modalFile as File);
   formData.append("upload_preset", "pbr-files");

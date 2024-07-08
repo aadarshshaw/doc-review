@@ -11,131 +11,159 @@ export default async function handler(
   res: NextApiResponse
 ) {
   await dbConnect();
-  const { method } = req;
+  const { method, query, body } = req;
   switch (method) {
-    case "GET":
-      if (req.query.id) {
-        const { id } = req.query;
-        Document.findById(id)
-          .then((doc: any) => {
-            return res.status(200).json({ document: doc });
-          })
-          .catch((err: any) => {
-            return res.status(500).json({ error: "Something went wrong" });
-          });
-      }
-      if (req.query.user) {
-        const { user } = req.query;
-        Document.find({ user })
-          .then((docs: any) => {
-            return res.status(200).json({ documents: docs });
-          })
-          .catch((err: any) => {
-            return res.status(500).json({ error: "Something went wrong" });
-          });
-      }
-
-      if (req.query.reviewer) {
-        const { reviewer } = req.query;
-        Document.find({ reviewers: { $in: reviewer } })
-          .then((docs: any) => {
-            return res.status(200).json({ documents: docs });
-          })
-          .catch((err: any) => {
-            return res.status(500).json({ error: "Something went wrong" });
-          });
-      }
+    case "GET": {
+      const { id, reviewer, user } = query;
+      getDocuments(id as string, reviewer as string, user as string, res);
       break;
+    }
 
-    case "POST":
-      const { title, url, user, reviewers } = req.body;
-      const document = new Document({
-        title,
-        url,
-        user,
-        reviewers,
-      });
-      document
-        .save()
-        .then((doc: any) => {
-          return res.status(200).json({ document: doc });
-        })
-        .catch((err: any) => {
-          return res.status(500).json({ error: "Something went wrong" });
-        });
-
+    case "POST": {
+      const { title, url, user, reviewers } = body;
+      createDocument(title, url, user, reviewers, res);
       break;
+    }
 
-    case "PUT":
-      if (req.query.id && req.query.reviewer) {
-        const { id, reviewer } = req.query;
-        Document.findByIdAndUpdate(
-          id,
-          { $push: { reviewers: reviewer } },
-          { new: true }
-        )
-          .then((doc: any) => {
-            return res.status(200).json({ document: doc });
-          })
-          .catch((err: any) => {
-            return res.status(500).json({ error: "Something went wrong" });
-          });
-      }
-      if (req.query.doc_id && req.query.note_id) {
-        const { doc_id, note_id } = req.query;
-        Document.findByIdAndUpdate(
-          doc_id,
-          { $push: { notes: note_id } },
-          { new: true }
-        )
-          .then((doc: any) => {
-            return res.status(200).json({ document: doc });
-          })
-          .catch((err: any) => {
-            return res.status(500).json({ error: "Something went wrong" });
-          });
-      }
+    case "PUT": {
+      const { doc_id, reviewer, note_id } = query;
+      updateDocuments(
+        doc_id as string,
+        reviewer as string,
+        note_id as string,
+        res
+      );
       break;
+    }
 
-    case "PATCH":
-      if (req.body.id && req.body.title && req.body.reviewers) {
-        const { id, title, reviewers } = req.body;
-        Document.findByIdAndUpdate(id, { title, reviewers }, { new: true })
-          .then((doc: any) => {
-            return res.status(200).json({ document: doc });
-          })
-          .catch((err: any) => {
-            return res.status(500).json({ error: "Something went wrong" });
-          });
-      }
+    case "PATCH": {
+      const {
+        id: documentId,
+        title: updatedTitle,
+        reviewers: updatedReviewers,
+      } = body;
+      patchDocument(documentId, updatedTitle, updatedReviewers, res);
       break;
+    }
 
-    case "DELETE":
-      if (req.query.id && req.query.reviewer) {
-        const { id, reviewer } = req.query;
-        Document.findByIdAndUpdate(
-          id,
-          { $pull: { reviewers: reviewer } },
-          { new: true }
-        )
-          .then((doc: any) => {
-            return res.status(200).json({ document: doc });
-          })
-          .catch((err: any) => {
-            return res.status(500).json({ error: "Something went wrong" });
-          });
-      } else {
-        const { id: deleteId } = req.query;
-        Document.findByIdAndDelete(deleteId)
-          .then((doc: any) => {
-            return res.status(200).json({ document: doc });
-          })
-          .catch((err: any) => {
-            return res.status(500).json({ error: "Something went wrong" });
-          });
-      }
+    case "DELETE": {
+      const { id: deleteId, reviewer: deleteReviewer } = query;
+      deleteDocument(deleteId as string, deleteReviewer as string, res);
       break;
+    }
+
     default:
-      return res.status(405).end(`Method ${method} Not Allowed`);
+      res.status(405).end(`Method ${method} Not Allowed`);
+  }
+}
+
+async function getDocuments(
+  id: string,
+  reviewer: string,
+  user: string,
+  res: NextApiResponse
+) {
+  try {
+    if (id && reviewer) {
+      const document = await Document.findById(id);
+      if (!document.reviewers.includes(reviewer)) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      return res.status(200).json({ document });
+    }
+    if (user) {
+      const documents = await Document.find({ user });
+      return res.status(200).json({ documents });
+    }
+    if (reviewer) {
+      const documents = await Document.find({ reviewers: { $in: reviewer } });
+      return res.status(200).json({ documents });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: err });
+  }
+}
+
+async function createDocument(
+  title: string,
+  url: string,
+  user: string,
+  reviewers: string[],
+  res: NextApiResponse
+) {
+  try {
+    const document = new Document({ title, url, user, reviewers });
+    const createdDocument = await document.save();
+    return res.status(200).json({ document: createdDocument });
+  } catch (err) {
+    return res.status(500).json({ error: err });
+  }
+}
+
+async function updateDocuments(
+  doc_id: string,
+  reviewer: string,
+  note_id: string,
+  res: NextApiResponse
+) {
+  try {
+    if (reviewer) {
+      const updatedDocument = await Document.findByIdAndUpdate(
+        doc_id,
+        { $push: { reviewers: reviewer } },
+        { new: true }
+      );
+      return res.status(200).json({ document: updatedDocument });
+    }
+    if (note_id) {
+      const updatedDocument = await Document.findByIdAndUpdate(
+        doc_id,
+        { $push: { notes: note_id } },
+        { new: true }
+      );
+      return res.status(200).json({ document: updatedDocument });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: err });
+  }
+}
+
+async function patchDocument(
+  documentId: string,
+  updatedTitle: string,
+  updatedReviewers: string[],
+  res: NextApiResponse
+) {
+  try {
+    const updatedDocument = await Document.findByIdAndUpdate(
+      documentId,
+      { title: updatedTitle, reviewers: updatedReviewers },
+      { new: true }
+    );
+    return res.status(200).json({ document: updatedDocument });
+  } catch (err) {
+    return res.status(500).json({ error: err });
+  }
+}
+
+async function deleteDocument(
+  deleteId: string,
+  deleteReviewer: string,
+  res: NextApiResponse
+) {
+  try {
+    if (deleteReviewer) {
+      const updatedDocument = await Document.findByIdAndUpdate(
+        deleteId,
+        { $pull: { reviewers: deleteReviewer } },
+        { new: true }
+      );
+      return res.status(200).json({ document: updatedDocument });
+    } else {
+      const deletedDocument = await Document.findByIdAndDelete(deleteId);
+      return res.status(200).json({ document: deletedDocument });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: err });
   }
 }

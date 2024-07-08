@@ -52,14 +52,31 @@ const CreateDocument = React.forwardRef(
             value={modalReviewers}
             onChange={(e, value) => setModalReviewers(value as string[])}
             renderInput={(params) => (
-              <TextField {...params} variant="standard" label="Reviewers" />
+              <TextField
+                {...params}
+                variant="standard"
+                label="Reviewers"
+                required
+              />
             )}
           />
+          <Typography
+            sx={{
+              fontStyle: "italic",
+              opacity: 0.5,
+              fontSize: 12,
+            }}
+          >
+            All reviewers will be notified by email
+          </Typography>
           <Typography variant="h6">Upload File</Typography>
           <Button variant="contained" component="label">
             <input
               type="file"
-              accept="pdf"
+              accept="application/pdf"
+              style={{
+                alignSelf: "center",
+              }}
               onChange={(e) =>
                 setModalFile(e.target.files ? e.target.files[0] : null)
               }

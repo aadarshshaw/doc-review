@@ -10,12 +10,14 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PreviewIcon from "@mui/icons-material/Preview";
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { DocumentInterface } from "@/interface/document";
 import { useSession } from "next-auth/react";
 import { UserInterface } from "@/interface/user";
 import axios from "axios";
+import handleAuthorNotify from "@/callbacks/toreview/handleAuthorNotify";
 
 export default function Review() {
   const [documents, setDocuments] = useState<DocumentInterface[]>([]);
@@ -123,6 +125,25 @@ export default function Review() {
                         : ""}
                     </Typography>
                     <ButtonGroup sx={{ marginTop: "auto" }} variant="text">
+                      {/* <Tooltip title="Notify Author">
+                        <Button
+                          color="success"
+                          fullWidth
+                          sx={{
+                            marginLeft: "auto",
+                            borderRadius: 0,
+                          }}
+                          onClick={() => {
+                            handleAuthorNotify({
+                              title: document.title,
+                              reviewer: user.email,
+                              author: document.user,
+                            });
+                          }}
+                        >
+                          <NotificationsActiveIcon />
+                        </Button>
+                      </Tooltip> */}
                       <Tooltip title="View Document">
                         <Button
                           color="info"

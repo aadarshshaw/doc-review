@@ -14,10 +14,26 @@ interface Props {
 }
 
 const handleSubmit = async (props: Props): Promise<any> => {
-  if (!props.modalFile) {
+  if (!props.modalTitle) {
+    enqueueSnackbar("Title cannot be empty", {
+      variant: "warning",
+    });
     return;
   }
-  if (!props.modalTitle) {
+  if (!props.modalReviewers.length) {
+    enqueueSnackbar(
+      `Reviewers cannot be empty \n Press Enter after adding a reviewer`,
+      {
+        variant: "warning",
+        style: { whiteSpace: "pre-line" },
+      }
+    );
+    return;
+  }
+  if (!props.modalFile) {
+    enqueueSnackbar("File cannot be empty", {
+      variant: "warning",
+    });
     return;
   }
   const formData = new FormData();

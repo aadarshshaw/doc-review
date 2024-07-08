@@ -51,7 +51,11 @@ export default function Home() {
   //       },
   //     })
   //     .then((res) => {
-  //       setUserOptions(res.data.users.map((user: UserInterface) => user.email));
+  //       setUserOptions(
+  //         res.data.users.map(
+  //           (user: UserInterface) => user.name + " " + user.email
+  //         )
+  //       );
   //     });
   // }, []);
 

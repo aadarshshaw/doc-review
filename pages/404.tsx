@@ -13,13 +13,7 @@ const NotFound = () => {
         height: `calc(100vh - 70px)`,
       }}
     >
-      <Image
-        src="/error_404.png"
-        alt="unauthorized"
-        width={800}
-        height={500}
-        unoptimized
-      />
+      <Image src="/error_404.png" alt="unauthorized" width={800} height={500} />
 
       <Typography
         variant="h5"

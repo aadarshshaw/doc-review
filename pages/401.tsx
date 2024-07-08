@@ -13,13 +13,7 @@ const Unauthorized = () => {
         height: `calc(100vh - 70px)`,
       }}
     >
-      <Image
-        src="/error_401.png"
-        alt="unauthorized"
-        width={800}
-        height={500}
-        unoptimized
-      />
+      <Image src="/error_401.png" alt="unauthorized" width={800} height={500} />
 
       <Typography
         variant="h5"

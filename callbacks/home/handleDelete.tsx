@@ -14,7 +14,6 @@ const handleDelete = async (props: Props) => {
   const document = props.documents.find(
     (doc) => doc._id === props.docId
   ) as DocumentInterface;
-  console.log(props);
   const newDocuments = props.documents.filter((doc) => doc._id !== props.docId);
   axios
     .delete("/api/cloudinary", { params: { url: document.url } })

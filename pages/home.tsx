@@ -52,9 +52,7 @@ export default function Home() {
         },
       })
       .then((res) => {
-        setUserOptions(
-          res.data.users.map((user: UserInterface) => user.email).toSorted()
-        );
+        setUserOptions(res.data.users);
       });
   }, []);
 
@@ -286,7 +284,6 @@ export default function Home() {
             modalTitle={modalTitle}
             setModalTitle={setModalTitle}
             setModalFile={setModalFile}
-            modalReviewers={modalReviewers}
             setModalReviewers={setModalReviewers}
             userOptions={userOptions}
             handleSubmit={() => {

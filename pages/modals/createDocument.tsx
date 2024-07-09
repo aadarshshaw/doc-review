@@ -2,6 +2,7 @@ import { UserInterface } from "@/interface/user";
 import { Box, Stack, Typography, TextField, Autocomplete } from "@mui/material";
 import { Button } from "@mui/material";
 import React, { useState } from "react";
+import TitleCase from "@/utils/titleCase";
 
 const style = {
   bgcolor: "#f2f7fa",
@@ -9,7 +10,6 @@ const style = {
   p: 4,
   borderRadius: 2,
 };
-
 
 const CreateDocument = React.forwardRef(
   (

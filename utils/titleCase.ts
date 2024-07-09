@@ -7,3 +7,5 @@ const TitleCase = (str: string) => {
     })
     .join(" ");
 };
+
+export default TitleCase;

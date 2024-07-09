@@ -53,9 +53,7 @@ export default function Home() {
       })
       .then((res) => {
         setUserOptions(
-          res.data.users
-            .map((user: UserInterface) => user.name + " " + user.email)
-            .toSorted()
+          res.data.users.map((user: UserInterface) => user.email).toSorted()
         );
       });
   }, []);
@@ -291,7 +289,7 @@ export default function Home() {
             modalReviewers={modalReviewers}
             setModalReviewers={setModalReviewers}
             userOptions={userOptions}
-            handleSubmit={() =>
+            handleSubmit={() => {
               handleSubmit({
                 modalFile,
                 modalTitle,
@@ -300,8 +298,8 @@ export default function Home() {
                 setDocuments,
                 clearModal,
                 setOpenCreateModal,
-              })
-            }
+              });
+            }}
           />
         }
       </Dialog>

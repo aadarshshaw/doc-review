@@ -80,7 +80,7 @@ const DisplayNotesSidebar = () => {
       .catch((err) => {
         router.push("/401");
       });
-  }, [status, user, document_id]);
+  }, [status, user, document_id, router]);
 
   useEffect(() => {
     if (!notes) return;

@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const nodemailer = require("nodemailer");
 
   const transporter = nodemailer.createTransport({
@@ -22,4 +25,4 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
   console.log("Message sent: %s", info.messageId);
   res.status(200).json({ message: "Email Sent" });
-};
+}

@@ -31,7 +31,7 @@ const EditDocument = React.forwardRef(
     ref
   ) => {
     const [selectedReviewers, setSelectedReviewers] = useState<UserInterface[]>(
-      userOptions.filter((user) => modalReviewers.includes(user.email)) || []
+      userOptions?.filter((user) => modalReviewers.includes(user.email)) || []
     );
     return (
       <Box sx={style} ref={ref}>

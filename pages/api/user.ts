@@ -37,7 +37,7 @@ export default async function handler(
         break;
       }
       if (req.query.all) {
-        User.find({})
+        User.find({}).sort({ name: 1 })
           .then((users: any) => {
             return res.status(200).json({ users });
           })

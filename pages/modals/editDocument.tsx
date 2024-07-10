@@ -1,7 +1,8 @@
 import { UserInterface } from "@/interface/user";
+import TitleCase from "@/utils/titleCase";
 import { Box, Stack, Typography, TextField, Autocomplete } from "@mui/material";
 import { Button } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 
 const style = {
   bgcolor: "#f2f7fa",
@@ -29,6 +30,9 @@ const EditDocument = React.forwardRef(
     },
     ref
   ) => {
+    const [selectedReviewers, setSelectedReviewers] = useState<UserInterface[]>(
+      userOptions.filter((user) => modalReviewers.includes(user.email))
+    );
     return (
       <Box sx={style} ref={ref}>
         <Stack spacing={2}>
@@ -47,10 +51,41 @@ const EditDocument = React.forwardRef(
             options={userOptions}
             defaultValue={[]}
             freeSolo
-            value={modalReviewers}
-            onChange={(e, value) => setModalReviewers(value as string[])}
+            value={selectedReviewers}
+            getOptionLabel={(option) =>
+              typeof option === "string" ? option : option.email
+            }
+            renderOption={(props, option) => (
+              <li {...props}>
+                <Typography>
+                  <span>{TitleCase(option.name)}</span>
+                  <br></br>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      opacity: 0.7,
+                    }}
+                  >
+                    {option.email}
+                  </span>
+                </Typography>
+              </li>
+            )}
+            onChange={(e, value) => {
+              setSelectedReviewers(value as UserInterface[]);
+              setModalReviewers(
+                value.map((item) =>
+                  typeof item === "string" ? item : item.email
+                )
+              );
+            }}
             renderInput={(params) => (
-              <TextField {...params} variant="standard" label="Reviewers" />
+              <TextField
+                {...params}
+                variant="standard"
+                label="Reviewers"
+                required
+              />
             )}
           />
           <Button variant="contained" onClick={handleEdit}>

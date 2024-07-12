@@ -125,7 +125,7 @@ export default function Review() {
                         : ""}
                     </Typography>
                     <ButtonGroup sx={{ marginTop: "auto" }} variant="text">
-                      {/* <Tooltip title="Notify Author">
+                      <Tooltip title="Notify Author">
                         <Button
                           color="success"
                           fullWidth
@@ -143,7 +143,7 @@ export default function Review() {
                         >
                           <NotificationsActiveIcon />
                         </Button>
-                      </Tooltip> */}
+                      </Tooltip>
                       <Tooltip title="View Document">
                         <Button
                           color="info"

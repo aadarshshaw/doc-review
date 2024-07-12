@@ -13,7 +13,7 @@ const content = (reviewer: string, title: string) => `<div>
       Your document titled <b>${title}</b> has been reviewed by ${reviewer}!
     </p>
 
-    <p>Thank you!</p>
+    <p>Warm Regards,</p>
 
     <p>DocReview Team</p>
   </div>`;

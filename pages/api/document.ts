@@ -66,7 +66,10 @@ async function getDocuments(
   try {
     if (id && reviewer) {
       const document = await Document.findById(id);
-      if (!document.reviewers.includes(reviewer)) {
+      if (
+        !document.reviewers.includes(reviewer) &&
+        document.user !== reviewer
+      ) {
         return res.status(401).json({ error: "Unauthorized" });
       }
       return res.status(200).json({ document });
